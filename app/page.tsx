@@ -17,6 +17,36 @@ export default function HomePage() {
   const [selectedTourForInquiry, setSelectedTourForInquiry] = useState<TourPackage | null>(null);
   const [inquiryModalOpen, setInquiryModalOpen] = useState(false);
 
+  // Inactivity popup timer (2 minutes)
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+
+    const resetTimer = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        // Only show if it's not already open
+        setInquiryModalOpen((prev) => {
+          if (!prev) {
+            setSelectedTourForInquiry(null);
+            return true;
+          }
+          return prev;
+        });
+      }, 10000); // 10,000 ms = 10 seconds
+    };
+
+    resetTimer(); // Start the timer when the page loads
+
+    // Reset the timer on any user interaction
+    const events = ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart'];
+    events.forEach((event) => document.addEventListener(event, resetTimer));
+
+    return () => {
+      clearTimeout(timeoutId);
+      events.forEach((event) => document.removeEventListener(event, resetTimer));
+    };
+  }, []);
+
   useEffect(() => {
     async function loadData() {
       const data = await getTours();

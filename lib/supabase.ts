@@ -1,9 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
-import { TourPackage, Inquiry, Subscriber, Destination } from '@/types';
-import { INITIAL_TOURS, POPULAR_DESTINATIONS } from '@/data/toursData';
+import { TourPackage, Inquiry, Destination } from '@/types';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
 
 // Initialize Supabase client if keys exist
 export const supabase = (supabaseUrl && supabaseAnonKey && !supabaseUrl.includes('your-project-ref'))
@@ -11,8 +10,6 @@ export const supabase = (supabaseUrl && supabaseAnonKey && !supabaseUrl.includes
   : null;
 
 // Dynamic in-memory stores for offline fallback
-let toursList: TourPackage[] = [...INITIAL_TOURS];
-let destinationsList: Destination[] = [...POPULAR_DESTINATIONS];
 let inquiriesList: Inquiry[] = [];
 let subscribersList: string[] = [];
 
@@ -54,7 +51,36 @@ export async function getTours(): Promise<TourPackage[]> {
     }
   }
 
-  return toursList;
+  return [];
+}
+
+/**
+ * Fetch all destinations
+ */
+export async function getDestinations(): Promise<Destination[]> {
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('destinations')
+        .select('*')
+        .order('name', { ascending: true });
+
+      if (!error && data && data.length > 0) {
+        return data.map((d: any) => ({
+          id: d.id,
+          name: d.name,
+          slug: d.slug,
+          category: d.category,
+          imageUrl: d.image_url,
+          packageCount: d.package_count,
+        }));
+      }
+    } catch (err) {
+      console.warn('Supabase fetch destinations failed, utilizing fallback dataset:', err);
+    }
+  }
+
+  return [];
 }
 
 /**
@@ -98,9 +124,6 @@ export async function createTour(newTour: Omit<TourPackage, 'id'>): Promise<{ su
     }
   }
 
-  // Fallback in-memory add
-  const tourToAdd: TourPackage = { ...newTour, id: Date.now().toString() };
-  toursList = [tourToAdd, ...toursList];
   return { success: true, message: 'New tour package added to local store successfully!' };
 }
 
@@ -127,7 +150,6 @@ export async function createDestination(newDest: Omit<Destination, 'id'>): Promi
     }
   }
 
-  destinationsList.unshift({ ...newDest, id: Date.now().toString() });
   return { success: true, message: 'New place added successfully!' };
 }
 

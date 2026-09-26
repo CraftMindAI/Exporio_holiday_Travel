@@ -1,63 +1,114 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { MapPin, ArrowRight } from 'lucide-react';
-import { POPULAR_DESTINATIONS } from '@/data/toursData';
+import { Send, ChevronLeft, ChevronRight } from 'lucide-react';
+import { getDestinations } from '@/lib/supabase';
+import { Destination } from '@/types';
 
 export default function PopularDestinations() {
+  const [destinations, setDestinations] = useState<Destination[]>([]);
+  const [loading, setLoading] = useState(true);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    async function loadDestinations() {
+      const data = await getDestinations();
+      setDestinations(data);
+      setLoading(false);
+    }
+    loadDestinations();
+  }, []);
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollContainerRef.current) {
+      const { scrollLeft, clientWidth } = scrollContainerRef.current;
+      const scrollAmount = clientWidth > 600 ? clientWidth / 2 : clientWidth; 
+      scrollContainerRef.current.scrollTo({
+        left: direction === 'left' ? scrollLeft - scrollAmount : scrollLeft + scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
+
   return (
-    <section className="py-16 bg-lightBg">
-      <div className="max-w-7xl mx-auto px-4">
+    <section className="py-16 bg-white overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4 relative">
         {/* Section Header */}
-        <div className="text-center max-w-2xl mx-auto mb-12">
-          <span className="text-xs font-extrabold tracking-widest text-blue-600 uppercase bg-blue-100 px-3 py-1 rounded-full inline-block mb-3">
-            Top Tourist Locations
-          </span>
-          <h2 className="text-3xl md:text-4xl font-extrabold text-navyBlue tracking-tight mb-3">
-            Popular Tour Destinations
+        <div className="text-center max-w-2xl mx-auto mb-10">
+          <h2 className="text-2xl md:text-3xl font-bold text-[#122a7f] flex items-center justify-center gap-2 mb-2">
+            Best Tour and Travel Company in India
+            <Send className="w-6 h-6 text-[#122a7f] -rotate-45" />
           </h2>
-          <p className="text-steelGray text-sm md:text-base">
-            Handpicked vacation spots across India and international destinations tailored for couples, families, and group getaways.
+          <p className="text-slate-500 text-sm md:text-base font-medium">
+            40000+ Tourists have already travelled with us!
           </p>
         </div>
 
-        {/* Destination Cards Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-          {POPULAR_DESTINATIONS.map((dest) => (
-            <Link
-              key={dest.id}
-              href={`/location/${dest.slug}`}
-              className="group relative h-64 md:h-72 rounded-2xl overflow-hidden shadow-card hover:shadow-cardHover transition-all duration-300 transform hover:-translate-y-1 block"
+        {/* Loading State */}
+        {loading ? (
+          <div className="flex justify-center items-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#122a7f]"></div>
+          </div>
+        ) : (
+          /* Slider Container */
+          <div className="relative group">
+            {/* Left Arrow */}
+            <button
+              onClick={() => scroll('left')}
+              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 md:-translate-x-6 z-10 bg-white/90 shadow-[0_4px_12px_rgba(0,0,0,0.1)] p-3 rounded-full text-[#122a7f] hover:bg-white hover:scale-110 transition-all opacity-0 group-hover:opacity-100 hidden sm:block focus:outline-none"
+              aria-label="Scroll left"
             >
-              {/* Background Image */}
-              <img
-                src={dest.imageUrl}
-                alt={dest.name}
-                className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-700"
-              />
-              {/* Overlay Gradient */}
-              <div className="absolute inset-0 bg-gradient-to-t from-navyDark via-navyDark/40 to-transparent" />
+              <ChevronLeft className="w-6 h-6" />
+            </button>
 
-              {/* Tag */}
-              <div className="absolute top-3 left-3 bg-navyBlue/80 backdrop-blur-md text-primaryCyan text-[11px] font-bold px-2.5 py-1 rounded-full uppercase border border-slate-700">
-                {dest.category}
-              </div>
+            {/* Scrollable Track */}
+            <div 
+              ref={scrollContainerRef}
+              className="flex gap-6 overflow-x-auto snap-x snap-mandatory pb-6 pt-2 scroll-smooth"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              {/* Hide webkit scrollbar via inline styles workaround or global css. Using tailwind utilities usually requires a plugin, so inline style is a fallback. */}
+              <style dangerouslySetInnerHTML={{__html: `
+                .hide-scrollbar::-webkit-scrollbar { display: none; }
+              `}} />
+              
+              {destinations.map((dest) => (
+                <div key={dest.id} className="min-w-[280px] md:min-w-[300px] snap-start shrink-0 hide-scrollbar">
+                  <Link
+                    href={`/location/${dest.slug}`}
+                    className="group relative h-72 md:h-80 rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 block bg-slate-100 w-full"
+                  >
+                    {/* Background Image */}
+                    <img
+                      src={dest.imageUrl}
+                      alt={dest.name}
+                      className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-700"
+                    />
+                    {/* Overlay Gradient at Bottom */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-300" />
 
-              {/* Card Content */}
-              <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
-                <div className="flex items-center gap-1.5 text-xs text-primaryCyan mb-1 font-semibold">
-                  <MapPin className="w-3.5 h-3.5" />
-                  <span>{dest.packageCount}+ Tour Packages</span>
+                    {/* Title */}
+                    <div className="absolute bottom-4 left-0 right-0 px-4 text-center">
+                      <h3 className="text-base md:text-xl font-bold text-white tracking-wide drop-shadow-lg">
+                        {dest.name}
+                      </h3>
+                    </div>
+                  </Link>
                 </div>
-                <h3 className="text-lg md:text-xl font-bold text-white group-hover:text-primaryCyan transition-colors flex items-center justify-between">
-                  <span>{dest.name}</span>
-                  <ArrowRight className="w-5 h-5 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300" />
-                </h3>
-              </div>
-            </Link>
-          ))}
-        </div>
+              ))}
+            </div>
+
+            {/* Right Arrow */}
+            <button
+              onClick={() => scroll('right')}
+              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 md:translate-x-6 z-10 bg-white/90 shadow-[0_4px_12px_rgba(0,0,0,0.1)] p-3 rounded-full text-[#122a7f] hover:bg-white hover:scale-110 transition-all opacity-0 group-hover:opacity-100 hidden sm:block focus:outline-none"
+              aria-label="Scroll right"
+            >
+              <ChevronRight className="w-6 h-6" />
+            </button>
+          </div>
+        )}
       </div>
     </section>
   );

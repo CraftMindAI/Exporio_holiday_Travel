@@ -51,11 +51,11 @@ export default function HeroBanner({ onSearch }: { onSearch?: (destination: stri
             index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'
           }`}
         >
-          <img
-            src={slide.image}
-            alt={slide.title}
-            className="w-full h-full object-cover object-center scale-105 transform transition-transform duration-10000"
-          />
+            <img
+              src={slide.image}
+              alt={slide.title}
+              className="w-full h-full object-cover object-center scale-105 transform transition-transform duration-10000"
+            />
           <div className="absolute inset-0 bg-gradient-to-t from-navyDark via-navyDark/60 to-navyDark/40" />
         </div>
       ))}

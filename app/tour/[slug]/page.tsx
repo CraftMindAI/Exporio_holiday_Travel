@@ -25,6 +25,32 @@ export default function TourDetailPage() {
   const [submitting, setSubmitting] = useState(false);
   const [formMsg, setFormMsg] = useState('');
 
+  // Inactivity popup timer (2 minutes)
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+
+    const resetTimer = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        setInquiryModalOpen((prev) => {
+          if (!prev) return true;
+          return prev;
+        });
+      }, 10000); // 10,000 ms = 10 seconds
+    };
+
+    resetTimer(); // Start the timer when the page loads
+
+    // Reset the timer on any user interaction
+    const events = ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart'];
+    events.forEach((event) => document.addEventListener(event, resetTimer));
+
+    return () => {
+      clearTimeout(timeoutId);
+      events.forEach((event) => document.removeEventListener(event, resetTimer));
+    };
+  }, []);
+
   useEffect(() => {
     async function loadTour() {
       if (slug) {
@@ -128,7 +154,11 @@ export default function TourDetailPage() {
                 )}
               </div>
               <button
-                onClick={() => setInquiryModalOpen(true)}
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setInquiryModalOpen(true);
+                }}
                 className="w-full mt-2 bg-gradient-to-r from-primaryCyan to-blue-600 hover:brightness-110 text-navyDark font-extrabold px-6 py-2.5 rounded-xl text-sm shadow-glow transition-all"
               >
                 BOOK THIS TOUR

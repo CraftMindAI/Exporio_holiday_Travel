@@ -111,7 +111,12 @@ export default function TourPackageCard({ tour, onEnquire }: TourPackageCardProp
               <ArrowRight className="w-4 h-4" />
             </Link>
             <button
-              onClick={() => onEnquire && onEnquire(tour)}
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (onEnquire) onEnquire(tour);
+              }}
               className="bg-navyBlue hover:bg-navyDark text-white text-xs font-extrabold px-4 py-2.5 rounded-xl shadow transition-all hover:brightness-110"
             >
               ENQUIRE NOW

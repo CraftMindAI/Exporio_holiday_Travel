@@ -2,7 +2,37 @@
 
 import React from 'react';
 import { Star, Quote, Award, ShieldCheck, HeartHandshake, Headphones } from 'lucide-react';
-import { TESTIMONIALS } from '@/data/toursData';
+import { Review } from '@/types';
+
+const TESTIMONIALS: Review[] = [
+  {
+    id: 'r1',
+    author: 'Rajesh Sharma',
+    location: 'Mumbai, Maharashtra',
+    rating: 5,
+    comment: 'Our Sikkim trip organized by Etripto was flawless! The hotel views of Kanchenjunga in Pelling and the driver were top notch. Highly recommended travel agency!',
+    tourName: 'Sikkim & Gangtok Package',
+    date: 'February 2026'
+  },
+  {
+    id: 'r2',
+    author: 'Priya & Ankit Roy',
+    location: 'Kolkata, West Bengal',
+    rating: 5,
+    comment: 'Booked our honeymoon in Kashmir through Etripto. The houseboat stay in Srinagar and Gulmarg cable car booking were arranged without any hassle.',
+    tourName: 'Kashmir Paradise Package',
+    date: 'January 2026'
+  },
+  {
+    id: 'r3',
+    author: 'Sunil Nair',
+    location: 'Bengaluru, Karnataka',
+    rating: 5,
+    comment: 'Etripto provided transparent pricing and 24/7 customer assistance during our family trip to Bhutan. Everything from SDF permits to hotels was super smooth.',
+    tourName: 'Bhutan Himalayan Journey',
+    date: 'December 2025'
+  }
+];
 
 export default function Testimonials() {
   return (
