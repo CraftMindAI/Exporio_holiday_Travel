@@ -88,7 +88,7 @@ export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }
           {/* Brand Logo */}
           <Link href="/" className="flex items-center">
             <Image
-              src="/logo.jpeg"
+              src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/logo.jpeg`}
               alt="Exporio Holidays"
               width={220}
               height={65}
