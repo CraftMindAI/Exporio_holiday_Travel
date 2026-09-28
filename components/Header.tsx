@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Mail, MapPin, Phone, Facebook, Instagram, Youtube, LogIn, ChevronDown, Menu, X, Plane } from 'lucide-react';
+import { Mail, MapPin, Phone, Facebook, Instagram, Youtube, LogIn, ChevronDown, Menu, X, Plane, User } from 'lucide-react';
 import { siteConfig } from '@/config/siteConfig';
 import { supabase } from '@/lib/supabase';
 
@@ -13,20 +13,33 @@ export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }
   const [authEmail, setAuthEmail] = useState('');
   const [authPassword, setAuthPassword] = useState('');
   const [authMessage, setAuthMessage] = useState('');
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  React.useEffect(() => {
+    const session = localStorage.getItem('exporio_admin_session');
+    if (session === 'true') {
+      setIsAdmin(true);
+    }
+  }, []);
 
   const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthMessage('Authenticating...');
     if (supabase) {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: authEmail,
-        password: authPassword,
+      // Use the custom RPC function to verify against the encrypted admins table
+      const { data: isValid, error } = await supabase.rpc('verify_admin_login', {
+        admin_email: authEmail,
+        admin_password: authPassword,
       });
 
-      if (error) {
-        setAuthMessage(error.message);
+      if (error || !isValid) {
+        setAuthMessage(error?.message || 'Invalid email or password.');
       } else {
         setAuthMessage('Login successful! Redirecting...');
+        // CRITICAL FIX: Save the admin session so the /admin page knows we are logged in!
+        localStorage.setItem('exporio_admin_session', 'true');
+        setIsAdmin(true);
+        
         setTimeout(() => {
           setAuthModal(false);
           if (authEmail === 'admin@exporio.com') {
@@ -36,6 +49,16 @@ export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }
       }
     } else {
       setAuthMessage('Database connection not established.');
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('exporio_admin_session');
+    setIsAdmin(false);
+    if (window.location.pathname === '/admin') {
+      window.location.href = '/';
+    } else {
+      window.location.reload();
     }
   };
 
@@ -70,14 +93,34 @@ export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }
               </a>
             </div>
 
-            {/* ONLY Sign In button */}
-            <button
-              onClick={() => setAuthModal(true)}
-              className="flex items-center gap-1 hover:text-primaryCyan transition-colors font-medium bg-slate-800/80 px-3 py-1 rounded-md border border-slate-700"
-            >
-              <LogIn className="w-3.5 h-3.5 text-primaryCyan" />
-              <span>Sign In</span>
-            </button>
+            {/* Admin Dashboard or Sign In button */}
+            {isAdmin ? (
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/admin"
+                  className="flex items-center gap-1 hover:text-primaryCyan transition-colors font-medium bg-slate-800/80 px-3 py-1 rounded-md border border-slate-700"
+                >
+                  <User className="w-3.5 h-3.5 text-primaryCyan" />
+                  <span>Admin</span>
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-1 hover:text-red-400 transition-colors font-medium bg-red-900/30 text-red-200 px-3 py-1 rounded-md border border-red-800/50"
+                  title="Logout"
+                >
+                  <LogIn className="w-3.5 h-3.5 rotate-180" />
+                  <span>Logout</span>
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setAuthModal(true)}
+                className="flex items-center gap-1 hover:text-primaryCyan transition-colors font-medium bg-slate-800/80 px-3 py-1 rounded-md border border-slate-700"
+              >
+                <LogIn className="w-3.5 h-3.5 text-primaryCyan" />
+                <span>Sign In</span>
+              </button>
+            )}
           </div>
         </div>
       </header>

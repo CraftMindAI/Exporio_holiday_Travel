@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Mail, Phone, MapPin, Clock, Send, CheckCircle2, ArrowLeft } from 'lucide-react';
-import { submitInquiry } from '@/lib/supabase';
+import { submitContact } from '@/lib/supabase';
 
 export default function ContactPage() {
   const [name, setName] = useState('');
@@ -18,12 +18,11 @@ export default function ContactPage() {
     setLoading(true);
 
     try {
-      await submitInquiry({
+      await submitContact({
         name,
         email,
         phone,
         message,
-        tourTitle: 'Contact Us Inquiry',
       });
       setSubmitted(true);
     } catch (err) {

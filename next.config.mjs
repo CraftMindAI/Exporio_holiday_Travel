@@ -2,10 +2,10 @@
 const nextConfig = {
   output: 'export',
   trailingSlash: true,
-  basePath: '/Exporio_holiday_Travel',
-  env: {
-    NEXT_PUBLIC_BASE_PATH: '/Exporio_holiday_Travel',
-  },
+  // basePath: '/Exporio_holiday_Travel',
+  // env: {
+  //   NEXT_PUBLIC_BASE_PATH: '/Exporio_holiday_Travel',
+  // },
   images: {
     unoptimized: true,
     remotePatterns: [

@@ -43,6 +43,16 @@ export interface Destination {
   description?: string;
 }
 
+export interface Blog {
+  id?: string;
+  title: string;
+  slug?: string;
+  image_url: string;
+  content: string;
+  author: string;
+  created_at?: string;
+}
+
 export interface Review {
   id: string;
   author: string;

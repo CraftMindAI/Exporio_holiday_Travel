@@ -1,14 +1,17 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import HeroBanner from '@/components/HeroBanner';
-import PopularDestinations from '@/components/PopularDestinations';
-import TourPackageCard from '@/components/TourPackageCard';
-import Testimonials from '@/components/Testimonials';
-import InquiryModal from '@/components/InquiryModal';
+import dynamic from 'next/dynamic';
+import { Compass, Sparkles, Globe } from 'lucide-react';
 import { TourPackage } from '@/types';
 import { getTours } from '@/lib/supabase';
-import { Compass, Sparkles, Globe } from 'lucide-react';
+
+// Lazy loaded components
+const HeroBanner = dynamic(() => import('@/components/HeroBanner'), { ssr: false });
+const TourPackageCard = dynamic(() => import('@/components/TourPackageCard'), { ssr: false });
+const PopularDestinations = dynamic(() => import('@/components/PopularDestinations'), { ssr: false });
+const Testimonials = dynamic(() => import('@/components/Testimonials'), { ssr: false });
+const InquiryModal = dynamic(() => import('@/components/InquiryModal'), { ssr: false });
 
 export default function HomePage() {
   const [tours, setTours] = useState<TourPackage[]>([]);

@@ -1,13 +1,14 @@
 import { createClient } from '@supabase/supabase-js';
-import { TourPackage, Inquiry, Destination } from '@/types';
+import { TourPackage, Inquiry, Destination, Blog } from '@/types';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://zsywloyjcbqonynrqmah.supabase.co';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpzeXdsb3lqY2Jxb255bnJxbWFoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA0MDQ0MjEsImV4cCI6MjEwNTk4MDQyMX0.gdhQ7Wq74mldbT695vr2DvXQBqVBpEejAwCZ4I2fF2Q';
 
 // Initialize Supabase client if keys exist
 export const supabase = (supabaseUrl && supabaseAnonKey && !supabaseUrl.includes('your-project-ref'))
   ? createClient(supabaseUrl, supabaseAnonKey)
   : null;
+
 
 // Dynamic in-memory stores for offline fallback
 let inquiriesList: Inquiry[] = [];
@@ -184,6 +185,30 @@ export async function submitInquiry(inquiry: Inquiry): Promise<{ success: boolea
 }
 
 /**
+ * Submit general contact message
+ */
+export async function submitContact(contact: { name: string, email: string, phone: string, message: string }): Promise<{ success: boolean; message: string }> {
+  if (supabase) {
+    try {
+      const { error } = await supabase.from('contacts').insert([
+        {
+          name: contact.name,
+          email: contact.email,
+          phone: contact.phone,
+          message: contact.message,
+        },
+      ]);
+      if (error) throw error;
+      return { success: true, message: 'Message sent successfully!' };
+    } catch (err: any) {
+      console.error('Supabase contact insert failed:', err);
+      throw new Error(err.message || 'Failed to submit contact');
+    }
+  }
+  return { success: true, message: 'Message sent successfully (Local fallback)!' };
+}
+
+/**
  * Admin: Fetch all inquiries
  */
 export async function getAllInquiries(): Promise<Inquiry[]> {
@@ -251,4 +276,57 @@ export async function subscribeNewsletter(email: string): Promise<{ success: boo
     subscribersList.push(email);
   }
   return { success: true, message: 'Thank you for subscribing to Exporio Holidays newsletter!' };
+}
+
+/**
+ * Admin: Create a new blog post
+ */
+export async function createBlog(blog: Blog): Promise<{ success: boolean; message: string }> {
+  if (supabase) {
+    try {
+      const { error } = await supabase.from('blogs').insert([
+        {
+          title: blog.title,
+          slug: blog.slug || blog.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, ''),
+          image_url: blog.image_url,
+          content: blog.content,
+          author: blog.author,
+        },
+      ]);
+      if (error) throw error;
+      return { success: true, message: 'Blog post published successfully!' };
+    } catch (err) {
+      console.warn('Supabase blog insert failed', err);
+    }
+  }
+  return { success: true, message: 'Blog post published successfully! (Local)' };
+}
+
+/**
+ * Fetch all blogs
+ */
+export async function getBlogs(): Promise<Blog[]> {
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('blogs')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (!error && data) {
+        return data.map((b: any) => ({
+          id: b.id,
+          title: b.title,
+          slug: b.slug,
+          image_url: b.image_url,
+          content: b.content,
+          author: b.author,
+          created_at: b.created_at,
+        }));
+      }
+    } catch (err) {
+      console.warn('Supabase fetch blogs failed');
+    }
+  }
+  return [];
 }
