@@ -39,7 +39,7 @@ export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }
         // CRITICAL FIX: Save the admin session so the /admin page knows we are logged in!
         localStorage.setItem('exporio_admin_session', 'true');
         setIsAdmin(true);
-        
+
         setTimeout(() => {
           setAuthModal(false);
           if (authEmail === 'admin@exporio.com') {
@@ -126,73 +126,73 @@ export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }
       </header>
 
       {/* Main Navigation */}
-      <nav className="bg-white text-navyBlue shadow-lg relative z-40">
+      <nav className="bg-navyDark text-white shadow-[0_10px_30px_-10px_rgba(255,78,0,0.2)] relative z-40 border-b border-primaryCyan/20">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           {/* Brand Logo */}
           <Link href="/" className="flex items-center">
             <Image
-              src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/logo.jpeg`}
+              src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/exporio-logo.jpeg`}
               alt="Exporio Holidays"
               width={220}
               height={65}
-              className="object-contain h-14 w-auto bg-white px-2 py-1 rounded-sm"
+              className="object-contain h-14 w-auto rounded-lg shadow-sm"
               priority
             />
           </Link>
 
           {/* Desktop Nav Links */}
-          <ul className="hidden lg:flex items-center gap-8 text-sm font-extrabold uppercase tracking-wider">
+          <ul className="hidden lg:flex items-center gap-8 text-sm font-extrabold uppercase tracking-wider text-slate-100">
             <li>
-              <Link href="/" className="hover:text-blue-600 transition-colors">
+              <Link href="/" className="hover:text-primaryCyan transition-colors">
                 Home
               </Link>
             </li>
             <li className="relative group cursor-pointer">
-              <span className="flex items-center gap-1 hover:text-blue-600 transition-colors">
+              <span className="flex items-center gap-1 hover:text-primaryCyan transition-colors">
                 Tour <ChevronDown className="w-4 h-4" />
               </span>
               {/* Dropdown */}
-              <div className="absolute top-full left-0 mt-2 w-56 bg-white border border-slate-100 rounded-xl shadow-2xl opacity-0 group-hover:opacity-100 visibility-hidden group-hover:visible transition-all duration-200 py-2 z-50">
-                <Link href="/location/sikkim-tour-package" className="block px-4 py-2 hover:bg-slate-50 hover:text-blue-600 text-xs font-bold capitalize">
+              <div className="absolute top-full left-0 mt-2 w-56 bg-navyDark border border-slate-700 rounded-xl shadow-[0_10px_40px_-10px_rgba(255,78,0,0.3)] opacity-0 group-hover:opacity-100 visibility-hidden group-hover:visible transition-all duration-200 py-2 z-50">
+                <Link href="/location/sikkim-tour-package" className="block px-4 py-2 hover:bg-slate-800 hover:text-primaryCyan text-xs font-bold capitalize text-slate-200">
                   Sikkim & Gangtok Packages
                 </Link>
-                <Link href="/location/kashmir-tour-package" className="block px-4 py-2 hover:bg-slate-50 hover:text-blue-600 text-xs font-bold capitalize">
+                <Link href="/location/kashmir-tour-package" className="block px-4 py-2 hover:bg-slate-800 hover:text-primaryCyan text-xs font-bold capitalize text-slate-200">
                   Kashmir Paradise Packages
                 </Link>
-                <Link href="/location/darjeeling-tour-packages" className="block px-4 py-2 hover:bg-slate-50 hover:text-blue-600 text-xs font-bold capitalize">
+                <Link href="/location/darjeeling-tour-packages" className="block px-4 py-2 hover:bg-slate-800 hover:text-primaryCyan text-xs font-bold capitalize text-slate-200">
                   Darjeeling Tour Packages
                 </Link>
-                <Link href="/location/kerala-tour-packages" className="block px-4 py-2 hover:bg-slate-50 hover:text-blue-600 text-xs font-bold capitalize">
+                <Link href="/location/kerala-tour-packages" className="block px-4 py-2 hover:bg-slate-800 hover:text-primaryCyan text-xs font-bold capitalize text-slate-200">
                   Kerala Backwaters
                 </Link>
-                <Link href="/location/andaman-tour-package" className="block px-4 py-2 hover:bg-slate-50 hover:text-blue-600 text-xs font-bold capitalize">
+                <Link href="/location/andaman-tour-package" className="block px-4 py-2 hover:bg-slate-800 hover:text-primaryCyan text-xs font-bold capitalize text-slate-200">
                   Andaman Islands
                 </Link>
               </div>
             </li>
             <li className="relative group cursor-pointer">
-              <span className="flex items-center gap-1 hover:text-blue-600 transition-colors">
+              <span className="flex items-center gap-1 hover:text-primaryCyan transition-colors">
                 Place To Visit <ChevronDown className="w-4 h-4" />
               </span>
-              <div className="absolute top-full left-0 mt-2 w-56 bg-white border border-slate-100 rounded-xl shadow-2xl opacity-0 group-hover:opacity-100 visibility-hidden group-hover:visible transition-all duration-200 py-2 z-50">
-                <Link href="/location/bhutan-tour-packages" className="block px-4 py-2 hover:bg-slate-50 hover:text-blue-600 text-xs font-bold capitalize">
+              <div className="absolute top-full left-0 mt-2 w-56 bg-navyDark border border-slate-700 rounded-xl shadow-[0_10px_40px_-10px_rgba(255,78,0,0.3)] opacity-0 group-hover:opacity-100 visibility-hidden group-hover:visible transition-all duration-200 py-2 z-50">
+                <Link href="/location/bhutan-tour-packages" className="block px-4 py-2 hover:bg-slate-800 hover:text-primaryCyan text-xs font-bold capitalize text-slate-200">
                   Bhutan Himalayan Tour
                 </Link>
-                <Link href="/location/bali-tour-packages" className="block px-4 py-2 hover:bg-slate-50 hover:text-blue-600 text-xs font-bold capitalize">
+                <Link href="/location/bali-tour-packages" className="block px-4 py-2 hover:bg-slate-800 hover:text-primaryCyan text-xs font-bold capitalize text-slate-200">
                   Bali Island Escape
                 </Link>
-                <Link href="/location/shimla-manali-tour-package" className="block px-4 py-2 hover:bg-slate-50 hover:text-blue-600 text-xs font-bold capitalize">
+                <Link href="/location/shimla-manali-tour-package" className="block px-4 py-2 hover:bg-slate-800 hover:text-primaryCyan text-xs font-bold capitalize text-slate-200">
                   Shimla Manali Package
                 </Link>
               </div>
             </li>
             <li>
-              <Link href="/contact" className="hover:text-blue-600 transition-colors">
+              <Link href="/contact" className="hover:text-primaryCyan transition-colors">
                 Contact Us
               </Link>
             </li>
             <li>
-              <Link href="/news" className="hover:text-blue-600 transition-colors">
+              <Link href="/news" className="hover:text-primaryCyan transition-colors">
                 Blogs
               </Link>
             </li>
@@ -201,21 +201,21 @@ export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }
 
           {/* Right Phone Call CTA */}
           <div className="hidden md:flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shadow-sm">
+            <div className="w-10 h-10 rounded-full bg-primaryCyan/20 text-primaryCyan flex items-center justify-center shadow-sm border border-primaryCyan/30">
               <Phone className="w-5 h-5 animate-pulse" />
             </div>
             <div>
-              <a href={siteConfig.phoneCallUrl} className="font-extrabold text-base text-navyBlue hover:text-blue-600 transition-colors block leading-tight">
+              <a href={siteConfig.phoneCallUrl} className="font-extrabold text-base text-white hover:text-primaryCyan transition-colors block leading-tight">
                 {siteConfig.phoneNumber}
               </a>
-              <span className="text-[11px] font-bold text-slate-500">24/7 Customer Support</span>
+              <span className="text-[11px] font-bold text-slate-400">24/7 Customer Support</span>
             </div>
           </div>
 
           {/* Mobile hamburger menu toggle */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden p-2 text-slate-300 hover:text-white"
+            className="lg:hidden p-2 text-slate-300 hover:text-primaryCyan"
           >
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>

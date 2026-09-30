@@ -49,6 +49,64 @@ export default function AdminPage() {
 
   const [isUploadingImage, setIsUploadingImage] = useState(false);
 
+  const handleBlogImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingImage(true);
+    setBlogMsg('Uploading image...');
+    try {
+      if (!supabase) throw new Error('Supabase client not initialized');
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('tour-images')
+        .upload(`blog-${fileName}`, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage.from('tour-images').getPublicUrl(`blog-${fileName}`);
+      setBlogImageUrl(data.publicUrl);
+      setBlogMsg('Image uploaded successfully!');
+    } catch (error: any) {
+      console.error('Upload error:', error);
+      setBlogMsg(`Error uploading image: ${error.message || 'Unknown error'}`);
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
+  const handlePlaceImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingImage(true);
+    setPlaceMsg('Uploading image...');
+    try {
+      if (!supabase) throw new Error('Supabase client not initialized');
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('tour-images')
+        .upload(`place-${fileName}`, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage.from('tour-images').getPublicUrl(`place-${fileName}`);
+      setPlaceImageUrl(data.publicUrl);
+      setPlaceMsg('Image uploaded successfully!');
+    } catch (error: any) {
+      console.error('Upload error:', error);
+      setPlaceMsg(`Error uploading image: ${error.message || 'Unknown error'}`);
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -72,7 +130,7 @@ export default function AdminPage() {
       setTourMsg('Image uploaded successfully!');
     } catch (error: any) {
       console.error('Upload error:', error);
-      setTourMsg('Error uploading image. Did you create the "tour-images" bucket?');
+      setTourMsg(`Error uploading image: ${error.message || 'Unknown error'}. Did you create the "tour-images" bucket?`);
     } finally {
       setIsUploadingImage(false);
     }
@@ -122,7 +180,9 @@ export default function AdminPage() {
     setTourSubmitting(true);
     setTourMsg('');
 
-    const slug = tourTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+    const baseSlug = tourTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+    const randomSuffix = Math.random().toString(36).substring(2, 6);
+    const slug = `${baseSlug}-${randomSuffix}`;
     const highlights = [tourHighlight1, tourHighlight2].filter(Boolean);
 
     const res = await createTour({
@@ -499,22 +559,32 @@ export default function AdminPage() {
 
               <div>
                 <label className="block text-xs font-bold text-slate-300 mb-1">Cover Image (Upload or Paste URL) *</label>
-                <div className="flex flex-col gap-2">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    disabled={isUploadingImage}
-                    className="w-full text-xs text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 disabled:opacity-50"
-                  />
+                <div className="flex items-center gap-2">
                   <input
                     type="url"
-                    required
                     value={tourImageUrl}
                     onChange={(e) => setTourImageUrl(e.target.value)}
-                    placeholder="https://images.unsplash.com/photo-..."
-                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-primaryCyan"
+                    placeholder="Paste image URL here..."
+                    className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-primaryCyan"
                   />
+                  <div className="relative">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      disabled={isUploadingImage}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                      title="Upload Image"
+                    />
+                    <button
+                      type="button"
+                      disabled={isUploadingImage}
+                      className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold disabled:opacity-50 flex items-center gap-2 whitespace-nowrap transition-colors"
+                    >
+                      <ImageIcon className="w-4 h-4" />
+                      {isUploadingImage ? 'Uploading...' : 'Upload'}
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -542,8 +612,8 @@ export default function AdminPage() {
 
               <button
                 type="submit"
-                disabled={tourSubmitting}
-                className="w-full bg-gradient-to-r from-primaryCyan to-blue-600 hover:brightness-110 text-navyDark font-extrabold py-3 rounded-xl text-xs uppercase tracking-wider shadow-glow transition-all"
+                disabled={tourSubmitting || isUploadingImage}
+                className="w-full bg-gradient-to-r from-primaryCyan to-blue-600 hover:brightness-110 text-navyDark font-extrabold py-3 rounded-xl text-xs uppercase tracking-wider shadow-glow transition-all disabled:opacity-50"
               >
                 {tourSubmitting ? 'Publishing Tour...' : 'PUBLISH TOUR PACKAGE'}
               </button>
@@ -592,21 +662,40 @@ export default function AdminPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1">Image URL *</label>
-                <input
-                  type="url"
-                  required
-                  value={placeImageUrl}
-                  onChange={(e) => setPlaceImageUrl(e.target.value)}
-                  placeholder="https://images.unsplash.com/photo-..."
-                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-primaryCyan"
-                />
+                <label className="block text-xs font-bold text-slate-300 mb-1">Cover Image (Upload or Paste URL) *</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="url"
+                    value={placeImageUrl}
+                    onChange={(e) => setPlaceImageUrl(e.target.value)}
+                    placeholder="Paste image URL here..."
+                    className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-primaryCyan"
+                  />
+                  <div className="relative">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handlePlaceImageUpload}
+                      disabled={isUploadingImage}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                      title="Upload Image"
+                    />
+                    <button
+                      type="button"
+                      disabled={isUploadingImage}
+                      className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold disabled:opacity-50 flex items-center gap-2 whitespace-nowrap transition-colors"
+                    >
+                      <ImageIcon className="w-4 h-4" />
+                      {isUploadingImage ? 'Uploading...' : 'Upload'}
+                    </button>
+                  </div>
+                </div>
               </div>
 
               <button
                 type="submit"
-                disabled={placeSubmitting}
-                className="w-full bg-gradient-to-r from-primaryCyan to-blue-600 hover:brightness-110 text-navyDark font-extrabold py-3 rounded-xl text-xs uppercase tracking-wider shadow-glow transition-all"
+                disabled={placeSubmitting || isUploadingImage}
+                className="w-full bg-gradient-to-r from-primaryCyan to-blue-600 hover:brightness-110 text-navyDark font-extrabold py-3 rounded-xl text-xs uppercase tracking-wider shadow-glow transition-all disabled:opacity-50"
               >
                 {placeSubmitting ? 'Adding Place...' : 'ADD DESTINATION PLACE'}
               </button>
@@ -655,15 +744,34 @@ export default function AdminPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1">Cover Image URL *</label>
-                <input
-                  type="url"
-                  required
-                  value={blogImageUrl}
-                  onChange={(e) => setBlogImageUrl(e.target.value)}
-                  placeholder="https://images.unsplash.com/photo-..."
-                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-primaryCyan"
-                />
+                <label className="block text-xs font-bold text-slate-300 mb-1">Cover Image (Upload or Paste URL) *</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="url"
+                    value={blogImageUrl}
+                    onChange={(e) => setBlogImageUrl(e.target.value)}
+                    placeholder="Paste image URL here..."
+                    className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-primaryCyan"
+                  />
+                  <div className="relative">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleBlogImageUpload}
+                      disabled={isUploadingImage}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                      title="Upload Image"
+                    />
+                    <button
+                      type="button"
+                      disabled={isUploadingImage}
+                      className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold disabled:opacity-50 flex items-center gap-2 whitespace-nowrap transition-colors"
+                    >
+                      <ImageIcon className="w-4 h-4" />
+                      {isUploadingImage ? 'Uploading...' : 'Upload'}
+                    </button>
+                  </div>
+                </div>
               </div>
 
               <div>
@@ -680,8 +788,8 @@ export default function AdminPage() {
 
               <button
                 type="submit"
-                disabled={blogSubmitting}
-                className="w-full bg-gradient-to-r from-primaryCyan to-blue-600 hover:brightness-110 text-navyDark font-extrabold py-3 rounded-xl text-xs uppercase tracking-wider shadow-glow transition-all"
+                disabled={blogSubmitting || isUploadingImage}
+                className="w-full bg-gradient-to-r from-primaryCyan to-blue-600 hover:brightness-110 text-navyDark font-extrabold py-3 rounded-xl text-xs uppercase tracking-wider shadow-glow transition-all disabled:opacity-50"
               >
                 {blogSubmitting ? 'Publishing Blog...' : 'PUBLISH BLOG'}
               </button>

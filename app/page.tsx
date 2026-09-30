@@ -100,28 +100,31 @@ export default function HomePage() {
       <PopularDestinations />
 
       {/* Main Tour Packages Showcase */}
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4">
+      <section className="py-16 relative overflow-hidden bg-gradient-to-bl from-navyDark via-navyBlue to-primaryCyan/20 text-white">
+        {/* Decorative Glow */}
+        <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-[500px] h-[500px] bg-primaryCyan/5 rounded-full blur-[120px] pointer-events-none" />
+        
+        <div className="max-w-7xl mx-auto px-4 relative z-10">
           {/* Section Header */}
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
             <div>
-              <div className="inline-flex items-center gap-1.5 text-xs font-extrabold text-blue-600 bg-blue-50 px-3 py-1 rounded-full uppercase tracking-wider mb-2">
+              <div className="inline-flex items-center gap-1.5 text-xs font-extrabold text-primaryCyan bg-primaryCyan/10 px-3 py-1 rounded-full uppercase tracking-wider mb-2">
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>Handcrafted Holiday Packages</span>
               </div>
-              <h2 className="text-3xl md:text-4xl font-extrabold text-navyBlue tracking-tight">
+              <h2 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight">
                 Featured Tour Packages
               </h2>
             </div>
 
             {/* Category Filter Tabs */}
-            <div className="flex items-center bg-slate-100 p-1.5 rounded-xl text-xs font-extrabold">
+            <div className="flex flex-wrap items-center justify-center bg-slate-800 p-1.5 rounded-xl text-xs font-extrabold gap-1">
               <button
                 onClick={() => handleTabChange('all')}
                 className={`px-4 py-2 rounded-lg transition-all ${
                   activeTab === 'all'
-                    ? 'bg-navyBlue text-white shadow'
-                    : 'text-slate-600 hover:text-navyBlue'
+                    ? 'bg-primaryCyan text-navyDark shadow'
+                    : 'text-slate-300 hover:text-white'
                 }`}
               >
                 All Packages
@@ -130,8 +133,8 @@ export default function HomePage() {
                 onClick={() => handleTabChange('domestic')}
                 className={`px-4 py-2 rounded-lg transition-all ${
                   activeTab === 'domestic'
-                    ? 'bg-navyBlue text-white shadow'
-                    : 'text-slate-600 hover:text-navyBlue'
+                    ? 'bg-primaryCyan text-navyDark shadow'
+                    : 'text-slate-300 hover:text-white'
                 }`}
               >
                 Domestic (India)
@@ -140,8 +143,8 @@ export default function HomePage() {
                 onClick={() => handleTabChange('international')}
                 className={`px-4 py-2 rounded-lg transition-all ${
                   activeTab === 'international'
-                    ? 'bg-navyBlue text-white shadow'
-                    : 'text-slate-600 hover:text-navyBlue'
+                    ? 'bg-primaryCyan text-navyDark shadow'
+                    : 'text-slate-300 hover:text-white'
                 }`}
               >
                 International
@@ -152,9 +155,9 @@ export default function HomePage() {
           {/* Domestic Tours */}
           {(activeTab === 'all' || activeTab === 'domestic') && (
             <div className="mb-16">
-              <div className="flex items-center gap-2 mb-6 border-b border-slate-100 pb-3">
-                <Compass className="w-5 h-5 text-blue-600" />
-                <h3 className="text-xl font-bold text-navyBlue">Top India Domestic Packages</h3>
+              <div className="flex items-center gap-2 mb-6 border-b border-slate-700 pb-3">
+                <Compass className="w-5 h-5 text-primaryCyan" />
+                <h3 className="text-xl font-bold text-white">Top India Domestic Packages</h3>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -168,9 +171,9 @@ export default function HomePage() {
           {/* International Tours */}
           {(activeTab === 'all' || activeTab === 'international') && (
             <div>
-              <div className="flex items-center gap-2 mb-6 border-b border-slate-100 pb-3">
-                <Globe className="w-5 h-5 text-blue-600" />
-                <h3 className="text-xl font-bold text-navyBlue">International Holiday Deals</h3>
+              <div className="flex items-center gap-2 mb-6 border-b border-slate-700 pb-3">
+                <Globe className="w-5 h-5 text-primaryCyan" />
+                <h3 className="text-xl font-bold text-white">International Holiday Deals</h3>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -32,15 +32,19 @@ export default function PopularDestinations() {
   };
 
   return (
-    <section className="py-16 bg-white overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 relative">
+    <section className="py-16 relative overflow-hidden bg-gradient-to-br from-navyDark via-navyBlue to-primaryCyan/20 text-white">
+      {/* Decorative Glow based on logo orange */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-primaryCyan/10 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-96 h-96 bg-primaryCyan/10 rounded-full blur-[100px] pointer-events-none" />
+
+      <div className="max-w-7xl mx-auto px-4 relative z-10">
         {/* Section Header */}
         <div className="text-center max-w-2xl mx-auto mb-10">
-          <h2 className="text-2xl md:text-3xl font-bold text-[#122a7f] flex items-center justify-center gap-2 mb-2">
+          <h2 className="text-2xl md:text-3xl font-bold text-white flex items-center justify-center gap-2 mb-2">
             Best Tour and Travel Company in India
-            <Send className="w-6 h-6 text-[#122a7f] -rotate-45" />
+            <Send className="w-6 h-6 text-primaryCyan -rotate-45" />
           </h2>
-          <p className="text-slate-500 text-sm md:text-base font-medium">
+          <p className="text-slate-300 text-sm md:text-base font-medium">
             40000+ Tourists have already travelled with us!
           </p>
         </div>

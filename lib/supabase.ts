@@ -121,11 +121,12 @@ export async function createTour(newTour: Omit<TourPackage, 'id'>): Promise<{ su
       if (error) throw error;
       return { success: true, message: 'New tour package published successfully!' };
     } catch (err: any) {
-      console.warn('Supabase insert failed, using local store:', err);
+      console.error('Supabase insert failed:', err);
+      return { success: false, message: `DB Error: ${err.message || 'Check browser console for details'}` };
     }
   }
 
-  return { success: true, message: 'New tour package added to local store successfully!' };
+  return { success: true, message: 'New tour package added to local store (Supabase not configured)' };
 }
 
 /**

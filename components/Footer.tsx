@@ -182,7 +182,7 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-slate-800 flex flex-col md:flex-row items-center justify-between text-xs text-slate-500 gap-4">
           <p>© {new Date().getFullYear()} Exporio Holidays. All Rights Reserved.</p>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center justify-center md:justify-end gap-4 text-center">
             <Link href="/" className="hover:text-slate-400">Privacy Policy</Link>
             <Link href="/" className="hover:text-slate-400">Terms & Conditions</Link>
             <Link href="/" className="hover:text-slate-400">Cancellation & Refund Policy</Link>

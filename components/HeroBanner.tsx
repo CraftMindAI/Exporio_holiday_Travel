@@ -47,15 +47,14 @@ export default function HeroBanner({ onSearch }: { onSearch?: (destination: stri
       {HERO_SLIDES.map((slide, index) => (
         <div
           key={index}
-          className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-            index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'
-          }`}
+          className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'
+            }`}
         >
-            <img
-              src={slide.image}
-              alt={slide.title}
-              className="w-full h-full object-cover object-center scale-105 transform transition-transform duration-10000"
-            />
+          <img
+            src={slide.image}
+            alt={slide.title}
+            className="w-full h-full object-cover object-center scale-105 transform transition-transform duration-10000"
+          />
           <div className="absolute inset-0 bg-gradient-to-t from-navyDark via-navyDark/60 to-navyDark/40" />
         </div>
       ))}
@@ -99,9 +98,8 @@ export default function HeroBanner({ onSearch }: { onSearch?: (destination: stri
             <button
               key={idx}
               onClick={() => setCurrentSlide(idx)}
-              className={`h-2 rounded-full transition-all duration-300 ${
-                idx === currentSlide ? 'w-8 bg-primaryCyan' : 'w-2 bg-white/40'
-              }`}
+              className={`h-2 rounded-full transition-all duration-300 ${idx === currentSlide ? 'w-8 bg-primaryCyan' : 'w-2 bg-white/40'
+                }`}
             />
           ))}
         </div>

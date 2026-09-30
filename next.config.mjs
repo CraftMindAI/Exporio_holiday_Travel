@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',
-  trailingSlash: true,
+  // output: 'export',
+  // trailingSlash: true,
   // basePath: '/Exporio_holiday_Travel',
   // env: {
   //   NEXT_PUBLIC_BASE_PATH: '/Exporio_holiday_Travel',

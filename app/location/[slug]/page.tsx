@@ -38,20 +38,23 @@ export default function LocationPage() {
     : 'ALL DESTINATIONS';
 
   return (
-    <div className="py-12 bg-lightBg min-h-screen">
-      <div className="max-w-7xl mx-auto px-4">
-        <Link href="/" className="inline-flex items-center gap-1.5 text-xs text-blue-600 font-bold hover:underline mb-4">
+    <div className="py-12 relative min-h-screen bg-gradient-to-br from-navyDark via-navyBlue to-primaryCyan/20 text-white overflow-hidden">
+      {/* Decorative Glow */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primaryCyan/5 rounded-full blur-[120px] pointer-events-none" />
+
+      <div className="max-w-7xl mx-auto px-4 relative z-10">
+        <Link href="/" className="inline-flex items-center gap-1.5 text-xs text-primaryCyan font-bold hover:underline mb-4 transition-colors">
           <ArrowLeft className="w-4 h-4" /> Back to Home
         </Link>
 
-        <div className="mb-8">
-          <div className="flex items-center gap-2 text-blue-600 text-xs font-extrabold uppercase tracking-wider mb-1">
+        <div className="mb-8 border-b border-slate-700/50 pb-6">
+          <div className="flex items-center gap-2 text-primaryCyan text-xs font-extrabold uppercase tracking-wider mb-1">
             <MapPin className="w-4 h-4" /> Explore Destination
           </div>
-          <h1 className="text-3xl md:text-4xl font-extrabold text-navyBlue">
+          <h1 className="text-3xl md:text-4xl font-extrabold text-white">
             {locationTitle} TOUR PACKAGES
           </h1>
-          <p className="text-steelGray text-sm mt-1">
+          <p className="text-slate-300 text-sm mt-2">
             Browse carefully selected holiday itineraries with transparent pricing and 24/7 on-trip assistance.
           </p>
         </div>

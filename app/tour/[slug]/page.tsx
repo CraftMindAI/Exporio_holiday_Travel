@@ -169,71 +169,75 @@ export default function TourDetailPage() {
       </div>
 
       {/* Main Content Layout */}
-      <div className="max-w-7xl mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column: Details, Highlights, Itinerary */}
-          <div className="lg:col-span-2 space-y-8">
-            {/* Highlights */}
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-              <h3 className="text-xl font-bold text-navyBlue mb-4">Tour Highlights</h3>
-              <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {tour.highlights.map((h, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-slate-700">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-1" />
-                    <span>{h}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Inclusions */}
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-              <h3 className="text-xl font-bold text-navyBlue mb-4">What's Included</h3>
-              <div className="flex flex-wrap items-center gap-6 mb-4 text-xs font-bold text-slate-700 pb-4 border-b border-slate-100">
-                <span className="flex items-center gap-1.5"><Hotel className="w-4 h-4 text-blue-600" /> Accommodation</span>
-                <span className="flex items-center gap-1.5"><Utensils className="w-4 h-4 text-blue-600" /> Daily Breakfast & Dinner</span>
-                <span className="flex items-center gap-1.5"><Car className="w-4 h-4 text-blue-600" /> Private AC Vehicle</span>
-                <span className="flex items-center gap-1.5"><Compass className="w-4 h-4 text-blue-600" /> Guided Sightseeing</span>
-              </div>
-              {tour.inclusions && (
-                <ul className="space-y-2">
-                  {tour.inclusions.map((inc, idx) => (
-                    <li key={idx} className="flex items-center gap-2 text-xs text-slate-600">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> {inc}
+      <div className="relative bg-gradient-to-br from-navyDark via-navyBlue to-primaryCyan/20 min-h-screen text-white">
+        {/* Decorative Glow */}
+        <div className="absolute top-1/4 right-0 w-[500px] h-[500px] bg-primaryCyan/5 rounded-full blur-[120px] pointer-events-none" />
+        
+        <div className="max-w-7xl mx-auto px-4 py-12 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Left Column: Details, Highlights, Itinerary */}
+            <div className="lg:col-span-2 space-y-8">
+              {/* Highlights */}
+              <div className="bg-navyDark/60 backdrop-blur-md p-6 rounded-2xl border border-slate-700/50 shadow-sm">
+                <h3 className="text-xl font-bold text-white mb-4">Tour Highlights</h3>
+                <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {tour.highlights.map((h, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm text-slate-300">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-1" />
+                      <span>{h}</span>
                     </li>
                   ))}
                 </ul>
+              </div>
+
+              {/* Inclusions */}
+              <div className="bg-navyDark/60 backdrop-blur-md p-6 rounded-2xl border border-slate-700/50 shadow-sm">
+                <h3 className="text-xl font-bold text-white mb-4">What's Included</h3>
+                <div className="flex flex-wrap items-center gap-6 mb-4 text-xs font-bold text-slate-300 pb-4 border-b border-slate-700/50">
+                  <span className="flex items-center gap-1.5"><Hotel className="w-4 h-4 text-primaryCyan" /> Accommodation</span>
+                  <span className="flex items-center gap-1.5"><Utensils className="w-4 h-4 text-primaryCyan" /> Daily Breakfast & Dinner</span>
+                  <span className="flex items-center gap-1.5"><Car className="w-4 h-4 text-primaryCyan" /> Private AC Vehicle</span>
+                  <span className="flex items-center gap-1.5"><Compass className="w-4 h-4 text-primaryCyan" /> Guided Sightseeing</span>
+                </div>
+                {tour.inclusions && (
+                  <ul className="space-y-2">
+                    {tour.inclusions.map((inc, idx) => (
+                      <li key={idx} className="flex items-center gap-2 text-xs text-slate-400">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> {inc}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              {/* Day by Day Itinerary */}
+              {tour.itinerary && tour.itinerary.length > 0 && (
+                <div className="bg-navyDark/60 backdrop-blur-md p-6 rounded-2xl border border-slate-700/50 shadow-sm">
+                  <h3 className="text-xl font-bold text-white mb-6">Day Wise Itinerary</h3>
+                  <div className="space-y-4">
+                    {tour.itinerary.map((item) => (
+                      <div key={item.day} className="border border-slate-700/50 rounded-xl overflow-hidden">
+                        <button
+                          onClick={() => setActiveDay(activeDay === item.day ? null : item.day)}
+                          className="w-full bg-slate-900/60 px-4 py-3 flex items-center justify-between text-left hover:bg-slate-800 transition-colors"
+                        >
+                          <span className="font-bold text-sm text-white">
+                            Day {item.day}: {item.title}
+                          </span>
+                          <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${activeDay === item.day ? 'rotate-180' : ''}`} />
+                        </button>
+
+                        {activeDay === item.day && (
+                          <div className="p-4 bg-navyDark text-xs text-slate-300 leading-relaxed border-t border-slate-700/50">
+                            {item.description}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
               )}
             </div>
-
-            {/* Day by Day Itinerary */}
-            {tour.itinerary && tour.itinerary.length > 0 && (
-              <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                <h3 className="text-xl font-bold text-navyBlue mb-6">Day Wise Itinerary</h3>
-                <div className="space-y-4">
-                  {tour.itinerary.map((item) => (
-                    <div key={item.day} className="border border-slate-200 rounded-xl overflow-hidden">
-                      <button
-                        onClick={() => setActiveDay(activeDay === item.day ? null : item.day)}
-                        className="w-full bg-slate-50 px-4 py-3 flex items-center justify-between text-left hover:bg-slate-100 transition-colors"
-                      >
-                        <span className="font-bold text-sm text-navyBlue">
-                          Day {item.day}: {item.title}
-                        </span>
-                        <ChevronDown className={`w-4 h-4 text-slate-500 transition-transform ${activeDay === item.day ? 'rotate-180' : ''}`} />
-                      </button>
-
-                      {activeDay === item.day && (
-                        <div className="p-4 bg-white text-xs text-slate-600 leading-relaxed border-t border-slate-100">
-                          {item.description}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
 
           {/* Right Column: Sticky Quick Inquiry Box */}
           <div className="space-y-6">
@@ -301,6 +305,7 @@ export default function TourDetailPage() {
           </div>
         </div>
       </div>
+    </div>
 
       <InquiryModal
         tour={tour}
