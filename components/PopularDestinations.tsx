@@ -97,6 +97,11 @@ export default function PopularDestinations() {
                       <h3 className="text-base md:text-xl font-bold text-white tracking-wide drop-shadow-lg">
                         {dest.name}
                       </h3>
+                      {dest.packageCount ? (
+                        <span className="inline-block mt-1 text-xs md:text-sm font-medium text-white/90 bg-black/40 px-3 py-1 rounded-full backdrop-blur-sm border border-white/20">
+                          {dest.packageCount} Tour Packages
+                        </span>
+                      ) : null}
                     </div>
                   </Link>
                 </div>

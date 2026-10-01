@@ -142,13 +142,16 @@ export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           {/* Brand Logo */}
           <Link href="/" className="flex items-center">
-            <div className="relative group">
-              <div className="absolute -inset-1 bg-gradient-to-r from-primaryCyan via-[#ff6b2b] to-[#ff2a00] rounded-xl blur-sm opacity-60 group-hover:opacity-100 transition-opacity duration-300" />
-              <img
-                src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/exporio-logo.jpeg`}
-                alt="Exporio Holidays"
-                className="relative h-10 sm:h-12 lg:h-14 w-auto rounded-lg object-cover shadow-2xl"
-              />
+            <div className="flex flex-col">
+              <div className="flex items-center">
+                <span className="text-2xl sm:text-3xl font-black tracking-widest text-white uppercase">
+                  Exporio
+                </span>
+                <Plane className="w-5 h-5 text-primaryCyan ml-1 transform rotate-45" strokeWidth={2.5} />
+              </div>
+              <span className="text-[10px] sm:text-xs font-bold tracking-[0.25em] text-slate-300 uppercase mt-0.5">
+                Holidays
+              </span>
             </div>
           </Link>
 
@@ -240,7 +243,7 @@ export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }
             <Link href="/" className="block py-3 text-sm font-semibold hover:text-primaryCyan rounded-lg hover:bg-slate-800/50 px-3 transition-colors">
               Home
             </Link>
-            
+
             {/* Tour Packages Accordion */}
             <div className="border-t border-slate-800/50">
               <button

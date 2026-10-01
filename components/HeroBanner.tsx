@@ -30,7 +30,7 @@ export default function HeroBanner({ onSearch }: { onSearch?: (destination: stri
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length);
-    }, 5000);
+    }, 3000);
     return () => clearInterval(timer);
   }, []);
 
@@ -53,7 +53,7 @@ export default function HeroBanner({ onSearch }: { onSearch?: (destination: stri
           <img
             src={slide.image}
             alt={slide.title}
-            className="w-full h-full object-cover object-center scale-105 transform transition-transform duration-10000"
+            className="w-full h-full object-cover object-center scale-105 transform transition-transform duration-[10000ms]"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-navyDark via-navyDark/60 to-navyDark/40" />
         </div>
@@ -84,10 +84,7 @@ export default function HeroBanner({ onSearch }: { onSearch?: (destination: stri
         </div>
 
         <h1 className="text-2xl sm:text-4xl lg:text-6xl font-black tracking-tight text-white mb-3 sm:mb-4 max-w-4xl leading-tight">
-          Exporio Holidays <br className="hidden sm:inline" />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-100 to-primaryCyan">
-            Travel Beyond Borders
-          </span>
+          {HERO_SLIDES[currentSlide].title}
         </h1>
 
         <p className="text-slate-200 text-xs sm:text-sm md:text-lg max-w-2xl mb-6 sm:mb-8 font-medium px-2">

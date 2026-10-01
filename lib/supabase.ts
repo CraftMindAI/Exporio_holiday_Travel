@@ -130,6 +130,57 @@ export async function createTour(newTour: Omit<TourPackage, 'id'>): Promise<{ su
 }
 
 /**
+ * Admin: Update Tour Package
+ */
+export async function updateTour(id: string, updatedTour: Partial<TourPackage>): Promise<{ success: boolean; message: string }> {
+  if (supabase) {
+    try {
+      const { error } = await supabase.from('tours').update({
+        title: updatedTour.title,
+        slug: updatedTour.slug,
+        location: updatedTour.location,
+        category: updatedTour.category,
+        price: updatedTour.price,
+        original_price: updatedTour.originalPrice || null,
+        duration_nights: updatedTour.durationNights,
+        duration_days: updatedTour.durationDays,
+        rating: updatedTour.rating,
+        review_count: updatedTour.reviewCount,
+        image_url: updatedTour.imageUrl,
+        highlights: updatedTour.highlights,
+        inclusions: updatedTour.inclusions,
+        is_featured: updatedTour.isFeatured,
+        is_trending: updatedTour.isTrending,
+      }).eq('id', id);
+
+      if (error) throw error;
+      return { success: true, message: 'Tour package updated successfully!' };
+    } catch (err: any) {
+      console.error('Supabase update failed:', err);
+      return { success: false, message: `DB Error: ${err.message}` };
+    }
+  }
+  return { success: false, message: 'Supabase not configured' };
+}
+
+/**
+ * Admin: Delete Tour Package
+ */
+export async function deleteTour(id: string): Promise<{ success: boolean; message: string }> {
+  if (supabase) {
+    try {
+      const { error } = await supabase.from('tours').delete().eq('id', id);
+      if (error) throw error;
+      return { success: true, message: 'Tour package deleted successfully!' };
+    } catch (err: any) {
+      console.error('Supabase delete failed:', err);
+      return { success: false, message: `DB Error: ${err.message}` };
+    }
+  }
+  return { success: false, message: 'Supabase not configured' };
+}
+
+/**
  * Admin: Create New Destination / Place
  */
 export async function createDestination(newDest: Omit<Destination, 'id'>): Promise<{ success: boolean; message: string }> {
@@ -330,4 +381,86 @@ export async function getBlogs(): Promise<Blog[]> {
     }
   }
   return [];
+}
+
+/**
+ * Admin: Update Destination
+ */
+export async function updateDestination(id: string, updatedDest: Partial<Destination>): Promise<{ success: boolean; message: string }> {
+  if (supabase) {
+    try {
+      const { error } = await supabase.from('destinations').update({
+        name: updatedDest.name,
+        slug: updatedDest.slug,
+        category: updatedDest.category,
+        image_url: updatedDest.imageUrl,
+        package_count: updatedDest.packageCount,
+      }).eq('id', id);
+
+      if (error) throw error;
+      return { success: true, message: 'Destination updated successfully!' };
+    } catch (err: any) {
+      console.error('Supabase update failed:', err);
+      return { success: false, message: `DB Error: ${err.message}` };
+    }
+  }
+  return { success: false, message: 'Supabase not configured' };
+}
+
+/**
+ * Admin: Delete Destination
+ */
+export async function deleteDestination(id: string): Promise<{ success: boolean; message: string }> {
+  if (supabase) {
+    try {
+      const { error } = await supabase.from('destinations').delete().eq('id', id);
+      if (error) throw error;
+      return { success: true, message: 'Destination deleted successfully!' };
+    } catch (err: any) {
+      console.error('Supabase delete failed:', err);
+      return { success: false, message: `DB Error: ${err.message}` };
+    }
+  }
+  return { success: false, message: 'Supabase not configured' };
+}
+
+/**
+ * Admin: Update Blog
+ */
+export async function updateBlog(id: string, updatedBlog: Partial<Blog>): Promise<{ success: boolean; message: string }> {
+  if (supabase) {
+    try {
+      const { error } = await supabase.from('blogs').update({
+        title: updatedBlog.title,
+        slug: updatedBlog.slug,
+        image_url: updatedBlog.image_url,
+        content: updatedBlog.content,
+        author: updatedBlog.author,
+      }).eq('id', id);
+
+      if (error) throw error;
+      return { success: true, message: 'Blog updated successfully!' };
+    } catch (err: any) {
+      console.error('Supabase update failed:', err);
+      return { success: false, message: `DB Error: ${err.message}` };
+    }
+  }
+  return { success: false, message: 'Supabase not configured' };
+}
+
+/**
+ * Admin: Delete Blog
+ */
+export async function deleteBlog(id: string): Promise<{ success: boolean; message: string }> {
+  if (supabase) {
+    try {
+      const { error } = await supabase.from('blogs').delete().eq('id', id);
+      if (error) throw error;
+      return { success: true, message: 'Blog deleted successfully!' };
+    } catch (err: any) {
+      console.error('Supabase delete failed:', err);
+      return { success: false, message: `DB Error: ${err.message}` };
+    }
+  }
+  return { success: false, message: 'Supabase not configured' };
 }

@@ -2,8 +2,8 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { supabase, getAllInquiries, createTour, createDestination, deleteInquiry, createBlog } from '@/lib/supabase';
-import { Inquiry, TourPackage, Destination } from '@/types';
+import { supabase, getAllInquiries, createTour, getTours, updateTour, deleteTour, createDestination, getDestinations, updateDestination, deleteDestination, deleteInquiry, createBlog, getBlogs, updateBlog, deleteBlog } from '@/lib/supabase';
+import { Inquiry, TourPackage, Destination, Blog } from '@/types';
 import { ShieldAlert, RefreshCw, Phone, Mail, Calendar, User, CheckCircle2, Clock, ArrowLeft, PlusCircle, Trash2, LogOut, MapPin, DollarSign, Sparkles, Image as ImageIcon } from 'lucide-react';
 
 export default function AdminPage() {
@@ -12,8 +12,22 @@ export default function AdminPage() {
   const [adminPassword, setAdminPassword] = useState('');
   const [loginError, setLoginError] = useState('');
 
-  const [activeTab, setActiveTab] = useState<'leads' | 'create-tour' | 'create-place' | 'create-blog'>('leads');
+  const [activeTab, setActiveTab] = useState<'leads' | 'create-tour' | 'create-place' | 'create-blog' | 'manage-tours' | 'manage-places' | 'manage-blogs'>('leads');
 
+  // Admin Tours State
+  const [adminTours, setAdminTours] = useState<TourPackage[]>([]);
+  const [loadingTours, setLoadingTours] = useState(false);
+  const [editingTourId, setEditingTourId] = useState<string | null>(null);
+
+  // Admin Places State
+  const [adminDestinations, setAdminDestinations] = useState<Destination[]>([]);
+  const [loadingDestinations, setLoadingDestinations] = useState(false);
+  const [editingDestinationId, setEditingDestinationId] = useState<string | null>(null);
+
+  // Admin Blogs State
+  const [adminBlogs, setAdminBlogs] = useState<Blog[]>([]);
+  const [loadingBlogs, setLoadingBlogs] = useState(false);
+  const [editingBlogId, setEditingBlogId] = useState<string | null>(null);
   // Leads State
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [loadingLeads, setLoadingLeads] = useState(false);
@@ -142,8 +156,32 @@ export default function AdminPage() {
     if (session === 'true') {
       setIsAuthenticated(true);
       fetchLeads();
+      fetchAdminTours();
+      fetchAdminDestinations();
+      fetchAdminBlogs();
     }
   }, []);
+
+  const fetchAdminTours = async () => {
+    setLoadingTours(true);
+    const data = await getTours();
+    setAdminTours(data);
+    setLoadingTours(false);
+  };
+
+  const fetchAdminDestinations = async () => {
+    setLoadingDestinations(true);
+    const data = await getDestinations();
+    setAdminDestinations(data);
+    setLoadingDestinations(false);
+  };
+
+  const fetchAdminBlogs = async () => {
+    setLoadingBlogs(true);
+    const data = await getBlogs();
+    setAdminBlogs(data);
+    setLoadingBlogs(false);
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -163,6 +201,9 @@ export default function AdminPage() {
         setIsAuthenticated(true);
         localStorage.setItem('exporio_admin_session', 'true');
         fetchLeads();
+        fetchAdminTours();
+        fetchAdminDestinations();
+        fetchAdminBlogs();
       }
     } else {
       setLoginError('Database connection not established.');
@@ -193,37 +234,86 @@ export default function AdminPage() {
     setTourSubmitting(true);
     setTourMsg('');
 
-    const baseSlug = tourTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
-    const randomSuffix = Math.random().toString(36).substring(2, 6);
-    const slug = `${baseSlug}-${randomSuffix}`;
     const highlights = [tourHighlight1, tourHighlight2].filter(Boolean);
+    
+    let res;
+    if (editingTourId) {
+      // Update existing tour
+      res = await updateTour(editingTourId, {
+        title: tourTitle,
+        location: tourLocation,
+        category: tourCategory,
+        price: parseFloat(tourPrice) || 9999,
+        originalPrice: tourOriginalPrice ? parseFloat(tourOriginalPrice) : undefined,
+        durationNights: parseInt(tourNights) || 5,
+        durationDays: parseInt(tourDays) || 6,
+        imageUrl: tourImageUrl || undefined,
+        highlights: highlights.length > 0 ? highlights : undefined,
+      });
+      if (res.success) {
+        setEditingTourId(null);
+        fetchAdminTours();
+      }
+    } else {
+      // Create new tour
+      const baseSlug = tourTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+      const randomSuffix = Math.random().toString(36).substring(2, 6);
+      const slug = `${baseSlug}-${randomSuffix}`;
+      
+      res = await createTour({
+        title: tourTitle,
+        slug,
+        location: tourLocation,
+        category: tourCategory,
+        price: parseFloat(tourPrice) || 9999,
+        originalPrice: tourOriginalPrice ? parseFloat(tourOriginalPrice) : undefined,
+        durationNights: parseInt(tourNights) || 5,
+        durationDays: parseInt(tourDays) || 6,
+        rating: 5.0,
+        reviewCount: 10,
+        imageUrl: tourImageUrl || 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=800&q=80',
+        highlights: highlights.length > 0 ? highlights : ['Customized Itinerary', 'Luxury Hotel Stay'],
+        isFeatured: true,
+        isTrending: true,
+      });
+    }
 
-    const res = await createTour({
-      title: tourTitle,
-      slug,
-      location: tourLocation,
-      category: tourCategory,
-      price: parseFloat(tourPrice) || 9999,
-      originalPrice: tourOriginalPrice ? parseFloat(tourOriginalPrice) : undefined,
-      durationNights: parseInt(tourNights) || 5,
-      durationDays: parseInt(tourDays) || 6,
-      rating: 5.0,
-      reviewCount: 10,
-      imageUrl: tourImageUrl || 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=800&q=80',
-      highlights: highlights.length > 0 ? highlights : ['Customized Itinerary', 'Luxury Hotel Stay'],
-      isFeatured: true,
-      isTrending: true,
-    });
 
     setTourMsg(res.message);
     setTourSubmitting(false);
-    setTourTitle('');
-    setTourLocation('');
-    setTourPrice('');
-    setTourOriginalPrice('');
-    setTourImageUrl('');
-    setTourHighlight1('');
-    setTourHighlight2('');
+    
+    if (res.success && !editingTourId) {
+      setTourTitle('');
+      setTourLocation('');
+      setTourPrice('');
+      setTourOriginalPrice('');
+      setTourImageUrl('');
+      setTourHighlight1('');
+      setTourHighlight2('');
+    }
+  };
+
+  const handleEditTour = (tour: TourPackage) => {
+    setEditingTourId(tour.id!);
+    setTourTitle(tour.title);
+    setTourLocation(tour.location);
+    setTourCategory(tour.category);
+    setTourPrice(tour.price.toString());
+    setTourOriginalPrice(tour.originalPrice ? tour.originalPrice.toString() : '');
+    setTourNights(tour.durationNights.toString());
+    setTourDays(tour.durationDays.toString());
+    setTourImageUrl(tour.imageUrl);
+    setTourHighlight1(tour.highlights[0] || '');
+    setTourHighlight2(tour.highlights[1] || '');
+    setActiveTab('create-tour');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleDeleteTour = async (id: string) => {
+    if (confirm('Are you sure you want to delete this tour package?')) {
+      await deleteTour(id);
+      fetchAdminTours();
+    }
   };
 
   const handleCreatePlace = async (e: React.FormEvent) => {
@@ -231,26 +321,52 @@ export default function AdminPage() {
     setPlaceSubmitting(true);
     setPlaceMsg('');
 
-    const slug = placeName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
-
-    const res = await createDestination({
-      name: placeName,
-      slug,
-      category: placeCategory,
-      imageUrl: placeImageUrl || 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=600&q=80',
-      packageCount: 12,
-    });
+    let res;
+    if (editingDestinationId) {
+      res = await updateDestination(editingDestinationId, {
+        name: placeName,
+        category: placeCategory,
+        imageUrl: placeImageUrl || undefined,
+      });
+      if (res.success) {
+        setEditingDestinationId(null);
+        fetchAdminDestinations();
+      }
+    } else {
+      const slug = placeName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+      res = await createDestination({
+        name: placeName,
+        slug,
+        category: placeCategory,
+        imageUrl: placeImageUrl || 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=600&q=80',
+        packageCount: 12,
+      });
+    }
 
     setPlaceMsg(res.message);
     setPlaceSubmitting(false);
 
-    // Check if message is a success message
-    if (res.message.includes('successfully')) {
+    if (res.message.includes('successfully') && !editingDestinationId) {
       setPlaceSubmitted(true);
+      setPlaceName('');
+      setPlaceImageUrl('');
     }
+  };
 
-    setPlaceName('');
-    setPlaceImageUrl('');
+  const handleEditPlace = (place: Destination) => {
+    setEditingDestinationId(place.id!);
+    setPlaceName(place.name);
+    setPlaceCategory(place.category);
+    setPlaceImageUrl(place.imageUrl);
+    setActiveTab('create-place');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleDeletePlace = async (id: string) => {
+    if (confirm('Are you sure you want to delete this place?')) {
+      await deleteDestination(id);
+      fetchAdminDestinations();
+    }
   };
 
   const handleCreateBlog = async (e: React.FormEvent) => {
@@ -258,19 +374,53 @@ export default function AdminPage() {
     setBlogSubmitting(true);
     setBlogMsg('');
 
-    const res = await createBlog({
-      title: blogTitle,
-      author: blogAuthor,
-      content: blogContent,
-      image_url: blogImageUrl || 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=600&q=80',
-    });
+    let res;
+    if (editingBlogId) {
+      res = await updateBlog(editingBlogId, {
+        title: blogTitle,
+        author: blogAuthor,
+        content: blogContent,
+        image_url: blogImageUrl || undefined,
+      });
+      if (res.success) {
+        setEditingBlogId(null);
+        fetchAdminBlogs();
+      }
+    } else {
+      res = await createBlog({
+        title: blogTitle,
+        author: blogAuthor,
+        content: blogContent,
+        image_url: blogImageUrl || 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=600&q=80',
+      });
+    }
 
     setBlogMsg(res.message);
     setBlogSubmitting(false);
-    setBlogTitle('');
-    setBlogContent('');
-    setBlogAuthor('');
-    setBlogImageUrl('');
+    
+    if (res.success && !editingBlogId) {
+      setBlogTitle('');
+      setBlogContent('');
+      setBlogAuthor('');
+      setBlogImageUrl('');
+    }
+  };
+
+  const handleEditBlog = (blog: Blog) => {
+    setEditingBlogId(blog.id!);
+    setBlogTitle(blog.title);
+    setBlogAuthor(blog.author);
+    setBlogContent(blog.content);
+    setBlogImageUrl(blog.image_url);
+    setActiveTab('create-blog');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleDeleteBlog = async (id: string) => {
+    if (confirm('Are you sure you want to delete this blog post?')) {
+      await deleteBlog(id);
+      fetchAdminBlogs();
+    }
   };
 
   // If NOT authenticated, show Admin Login Portal
@@ -355,11 +505,10 @@ export default function AdminPage() {
 
         </div>
 
-        {/* Dashboard Tabs */}
-        <div className="flex items-center bg-navyBlue p-1.5 rounded-2xl border border-slate-800 mb-8 max-w-2xl">
+        <div className="flex flex-wrap items-center bg-navyBlue p-1.5 rounded-2xl border border-slate-800 mb-8 max-w-4xl gap-2">
           <button
             onClick={() => setActiveTab('leads')}
-            className={`flex-1 py-2.5 rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 transition-all ${activeTab === 'leads' ? 'bg-primaryCyan text-navyDark shadow-glow' : 'text-slate-400 hover:text-white'
+            className={`flex-1 py-2.5 px-2 rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 transition-all ${activeTab === 'leads' ? 'bg-primaryCyan text-navyDark shadow-glow' : 'text-slate-400 hover:text-white'
               }`}
           >
             <Clock className="w-4 h-4" />
@@ -367,30 +516,80 @@ export default function AdminPage() {
           </button>
 
           <button
-            onClick={() => setActiveTab('create-tour')}
-            className={`flex-1 py-2.5 rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 transition-all ${activeTab === 'create-tour' ? 'bg-primaryCyan text-navyDark shadow-glow' : 'text-slate-400 hover:text-white'
+            onClick={() => setActiveTab('manage-tours')}
+            className={`flex-1 py-2.5 px-2 rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 transition-all ${activeTab === 'manage-tours' ? 'bg-primaryCyan text-navyDark shadow-glow' : 'text-slate-400 hover:text-white'
               }`}
           >
-            <PlusCircle className="w-4 h-4" />
-            <span>Create New Tour</span>
+            <Sparkles className="w-4 h-4" />
+            <span>Manage Tours</span>
           </button>
 
           <button
-            onClick={() => setActiveTab('create-place')}
-            className={`flex-1 py-2.5 rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 transition-all ${activeTab === 'create-place' ? 'bg-primaryCyan text-navyDark shadow-glow' : 'text-slate-400 hover:text-white'
+            onClick={() => {
+              setEditingTourId(null);
+              setTourTitle('');
+              setTourLocation('');
+              setTourPrice('');
+              setTourOriginalPrice('');
+              setTourImageUrl('');
+              setTourHighlight1('');
+              setTourHighlight2('');
+              setActiveTab('create-tour');
+            }}
+            className={`flex-1 py-2.5 px-2 rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 transition-all ${activeTab === 'create-tour' ? 'bg-primaryCyan text-navyDark shadow-glow' : 'text-slate-400 hover:text-white'
+              }`}
+          >
+            <PlusCircle className="w-4 h-4" />
+            <span>Create Tour</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('manage-places')}
+            className={`flex-1 py-2.5 px-2 rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 transition-all ${activeTab === 'manage-places' ? 'bg-primaryCyan text-navyDark shadow-glow' : 'text-slate-400 hover:text-white'
               }`}
           >
             <MapPin className="w-4 h-4" />
-            <span>Create New Place</span>
+            <span>Manage Places</span>
           </button>
 
           <button
-            onClick={() => setActiveTab('create-blog')}
-            className={`flex-1 py-2.5 rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 transition-all ${activeTab === 'create-blog' ? 'bg-primaryCyan text-navyDark shadow-glow' : 'text-slate-400 hover:text-white'
+            onClick={() => {
+              setEditingDestinationId(null);
+              setPlaceName('');
+              setPlaceImageUrl('');
+              setPlaceSubmitted(false);
+              setActiveTab('create-place');
+            }}
+            className={`flex-1 py-2.5 px-2 rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 transition-all ${activeTab === 'create-place' ? 'bg-primaryCyan text-navyDark shadow-glow' : 'text-slate-400 hover:text-white'
               }`}
           >
             <PlusCircle className="w-4 h-4" />
-            <span>Create New Blog</span>
+            <span>Add Place</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('manage-blogs')}
+            className={`flex-1 py-2.5 px-2 rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 transition-all ${activeTab === 'manage-blogs' ? 'bg-primaryCyan text-navyDark shadow-glow' : 'text-slate-400 hover:text-white'
+              }`}
+          >
+            <Sparkles className="w-4 h-4" />
+            <span>Manage Blogs</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setEditingBlogId(null);
+              setBlogTitle('');
+              setBlogContent('');
+              setBlogAuthor('');
+              setBlogImageUrl('');
+              setActiveTab('create-blog');
+            }}
+            className={`flex-1 py-2.5 px-2 rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 transition-all ${activeTab === 'create-blog' ? 'bg-primaryCyan text-navyDark shadow-glow' : 'text-slate-400 hover:text-white'
+              }`}
+          >
+            <PlusCircle className="w-4 h-4" />
+            <span>Add Blog</span>
           </button>
         </div>
 
@@ -475,13 +674,232 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* TAB 2: CREATE NEW TOUR PACKAGE */}
+        {/* TAB 1.5: MANAGE TOURS */}
+        {activeTab === 'manage-tours' && (
+          <div>
+            {loadingTours ? (
+              <div className="text-center py-20">
+                <div className="w-8 h-8 border-4 border-primaryCyan border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+                <p className="text-xs text-slate-400">Fetching tours from database...</p>
+              </div>
+            ) : adminTours.length === 0 ? (
+              <div className="bg-navyBlue border border-slate-800 rounded-2xl p-12 text-center max-w-lg mx-auto">
+                <Sparkles className="w-12 h-12 text-slate-600 mx-auto mb-3" />
+                <h3 className="text-lg font-bold text-white mb-1">No Tours Found</h3>
+                <p className="text-xs text-slate-400 mb-4">You haven't created any tour packages yet.</p>
+              </div>
+            ) : (
+              <div className="bg-navyBlue border border-slate-800 rounded-2xl overflow-hidden shadow-2xl">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-navyDark text-slate-400 uppercase text-[11px] tracking-wider border-b border-slate-800">
+                      <tr>
+                        <th className="px-6 py-4">Image</th>
+                        <th className="px-6 py-4">Title & Location</th>
+                        <th className="px-6 py-4">Price</th>
+                        <th className="px-6 py-4">Duration</th>
+                        <th className="px-6 py-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-800">
+                      {adminTours.map((tour) => (
+                        <tr key={tour.id} className="hover:bg-slate-800/50 transition-colors">
+                          <td className="px-6 py-4">
+                            <img src={tour.imageUrl} alt={tour.title} className="w-16 h-12 object-cover rounded-lg" />
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="font-bold text-white text-sm mb-1">{tour.title}</div>
+                            <div className="text-slate-400 flex items-center gap-1"><MapPin className="w-3 h-3"/> {tour.location}</div>
+                          </td>
+                          <td className="px-6 py-4 font-semibold text-primaryCyan">
+                            ₹{tour.price.toLocaleString('en-IN')}
+                          </td>
+                          <td className="px-6 py-4 text-slate-300">
+                            {tour.durationDays}D / {tour.durationNights}N
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <div className="flex justify-end gap-2">
+                              <button
+                                onClick={() => handleEditTour(tour)}
+                                className="px-3 py-1.5 bg-blue-500/20 hover:bg-blue-600 text-blue-300 hover:text-white rounded-lg transition-colors font-bold"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => tour.id && handleDeleteTour(tour.id)}
+                                className="p-1.5 bg-red-500/20 hover:bg-red-600 text-red-300 hover:text-white rounded-lg transition-colors"
+                                title="Delete Tour"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TAB 1.6: MANAGE PLACES */}
+        {activeTab === 'manage-places' && (
+          <div>
+            {loadingDestinations ? (
+              <div className="text-center py-20">
+                <div className="w-8 h-8 border-4 border-primaryCyan border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+                <p className="text-xs text-slate-400">Fetching destinations from database...</p>
+              </div>
+            ) : adminDestinations.length === 0 ? (
+              <div className="bg-navyBlue border border-slate-800 rounded-2xl p-12 text-center max-w-lg mx-auto">
+                <MapPin className="w-12 h-12 text-slate-600 mx-auto mb-3" />
+                <h3 className="text-lg font-bold text-white mb-1">No Places Found</h3>
+                <p className="text-xs text-slate-400 mb-4">You haven't created any destinations yet.</p>
+              </div>
+            ) : (
+              <div className="bg-navyBlue border border-slate-800 rounded-2xl overflow-hidden shadow-2xl">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-navyDark text-slate-400 uppercase text-[11px] tracking-wider border-b border-slate-800">
+                      <tr>
+                        <th className="px-6 py-4">Image</th>
+                        <th className="px-6 py-4">Destination Name</th>
+                        <th className="px-6 py-4">Category</th>
+                        <th className="px-6 py-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-800">
+                      {adminDestinations.map((place) => (
+                        <tr key={place.id} className="hover:bg-slate-800/50 transition-colors">
+                          <td className="px-6 py-4">
+                            <img src={place.imageUrl} alt={place.name} className="w-16 h-12 object-cover rounded-lg" />
+                          </td>
+                          <td className="px-6 py-4 font-bold text-white text-sm">
+                            {place.name}
+                          </td>
+                          <td className="px-6 py-4 text-slate-300 capitalize">
+                            {place.category}
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <div className="flex justify-end gap-2">
+                              <button
+                                onClick={() => handleEditPlace(place)}
+                                className="px-3 py-1.5 bg-blue-500/20 hover:bg-blue-600 text-blue-300 hover:text-white rounded-lg transition-colors font-bold"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => place.id && handleDeletePlace(place.id)}
+                                className="p-1.5 bg-red-500/20 hover:bg-red-600 text-red-300 hover:text-white rounded-lg transition-colors"
+                                title="Delete Place"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TAB 1.7: MANAGE BLOGS */}
+        {activeTab === 'manage-blogs' && (
+          <div>
+            {loadingBlogs ? (
+              <div className="text-center py-20">
+                <div className="w-8 h-8 border-4 border-primaryCyan border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+                <p className="text-xs text-slate-400">Fetching blogs from database...</p>
+              </div>
+            ) : adminBlogs.length === 0 ? (
+              <div className="bg-navyBlue border border-slate-800 rounded-2xl p-12 text-center max-w-lg mx-auto">
+                <Sparkles className="w-12 h-12 text-slate-600 mx-auto mb-3" />
+                <h3 className="text-lg font-bold text-white mb-1">No Blogs Found</h3>
+                <p className="text-xs text-slate-400 mb-4">You haven't created any blogs yet.</p>
+              </div>
+            ) : (
+              <div className="bg-navyBlue border border-slate-800 rounded-2xl overflow-hidden shadow-2xl">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-navyDark text-slate-400 uppercase text-[11px] tracking-wider border-b border-slate-800">
+                      <tr>
+                        <th className="px-6 py-4">Image</th>
+                        <th className="px-6 py-4">Title</th>
+                        <th className="px-6 py-4">Author</th>
+                        <th className="px-6 py-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-800">
+                      {adminBlogs.map((blog) => (
+                        <tr key={blog.id} className="hover:bg-slate-800/50 transition-colors">
+                          <td className="px-6 py-4">
+                            <img src={blog.image_url} alt={blog.title} className="w-16 h-12 object-cover rounded-lg" />
+                          </td>
+                          <td className="px-6 py-4 font-bold text-white text-sm">
+                            {blog.title}
+                          </td>
+                          <td className="px-6 py-4 text-slate-300">
+                            {blog.author}
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <div className="flex justify-end gap-2">
+                              <button
+                                onClick={() => handleEditBlog(blog)}
+                                className="px-3 py-1.5 bg-blue-500/20 hover:bg-blue-600 text-blue-300 hover:text-white rounded-lg transition-colors font-bold"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => blog.id && handleDeleteBlog(blog.id)}
+                                className="p-1.5 bg-red-500/20 hover:bg-red-600 text-red-300 hover:text-white rounded-lg transition-colors"
+                                title="Delete Blog"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TAB 2: CREATE / EDIT NEW TOUR PACKAGE */}
         {activeTab === 'create-tour' && (
           <div className="bg-navyBlue border border-slate-800 rounded-2xl p-6 md:p-8 max-w-3xl shadow-2xl">
-            <h3 className="text-xl font-bold text-white mb-1 flex items-center gap-2">
-              <PlusCircle className="w-5 h-5 text-primaryCyan" /> Add New Tour Package
-            </h3>
-            <p className="text-xs text-slate-400 mb-6">Fill in the tour details below to publish a new package to your website.</p>
+            <div className="flex items-center justify-between mb-1">
+              <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                <PlusCircle className="w-5 h-5 text-primaryCyan" /> {editingTourId ? 'Edit Tour Package' : 'Add New Tour Package'}
+              </h3>
+              {editingTourId && (
+                <button 
+                  onClick={() => {
+                    setEditingTourId(null);
+                    setTourTitle('');
+                    setTourLocation('');
+                    setTourPrice('');
+                    setTourOriginalPrice('');
+                    setTourImageUrl('');
+                    setTourHighlight1('');
+                    setTourHighlight2('');
+                  }}
+                  className="text-xs text-slate-400 hover:text-white underline"
+                >
+                  Cancel Edit
+                </button>
+              )}
+            </div>
+            <p className="text-xs text-slate-400 mb-6">{editingTourId ? 'Update the details for this tour package.' : 'Fill in the tour details below to publish a new package to your website.'}</p>
 
             {tourMsg && (
               <div className="p-3 bg-emerald-500/20 border border-emerald-500 text-emerald-300 text-xs rounded-xl mb-6 flex items-center gap-2">
@@ -641,7 +1059,7 @@ export default function AdminPage() {
                 disabled={tourSubmitting || isUploadingImage}
                 className="w-full bg-gradient-to-r from-primaryCyan to-blue-600 hover:brightness-110 text-navyDark font-extrabold py-3 rounded-xl text-xs uppercase tracking-wider shadow-glow transition-all disabled:opacity-50"
               >
-                {tourSubmitting ? 'Publishing Tour...' : 'PUBLISH TOUR PACKAGE'}
+                {tourSubmitting ? 'Saving Tour...' : (editingTourId ? 'UPDATE TOUR PACKAGE' : 'PUBLISH TOUR PACKAGE')}
               </button>
             </form>
           </div>
@@ -650,10 +1068,25 @@ export default function AdminPage() {
         {/* TAB 3: CREATE NEW PLACE / DESTINATION */}
         {activeTab === 'create-place' && (
           <div className="bg-navyBlue border border-slate-800 rounded-2xl p-6 md:p-8 max-w-xl shadow-2xl">
-            <h3 className="text-xl font-bold text-white mb-1 flex items-center gap-2">
-              <MapPin className="w-5 h-5 text-primaryCyan" /> Add New Tourist Place / Destination
-            </h3>
-            <p className="text-xs text-slate-400 mb-6">Add a new destination card to the Popular Destinations grid on the home page.</p>
+            <div className="flex items-center justify-between mb-1">
+              <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                <MapPin className="w-5 h-5 text-primaryCyan" /> {editingDestinationId ? 'Edit Tourist Place' : 'Add New Tourist Place / Destination'}
+              </h3>
+              {editingDestinationId && (
+                <button 
+                  onClick={() => {
+                    setEditingDestinationId(null);
+                    setPlaceName('');
+                    setPlaceImageUrl('');
+                    setPlaceSubmitted(false);
+                  }}
+                  className="text-xs text-slate-400 hover:text-white underline"
+                >
+                  Cancel Edit
+                </button>
+              )}
+            </div>
+            <p className="text-xs text-slate-400 mb-6">{editingDestinationId ? 'Update the details for this destination.' : 'Add a new destination card to the Popular Destinations grid on the home page.'}</p>
 
             {placeSubmitted ? (
               <div className="p-6 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-center space-y-3">
@@ -747,7 +1180,7 @@ export default function AdminPage() {
                     disabled={placeSubmitting || isUploadingImage}
                     className="w-full bg-gradient-to-r from-primaryCyan to-blue-600 hover:brightness-110 text-navyDark font-extrabold py-3 rounded-xl text-xs uppercase tracking-wider shadow-glow transition-all disabled:opacity-50"
                   >
-                    {placeSubmitting ? 'Adding Place...' : 'ADD DESTINATION PLACE'}
+                    {placeSubmitting ? 'Saving Place...' : (editingDestinationId ? 'UPDATE DESTINATION PLACE' : 'ADD DESTINATION PLACE')}
                   </button>
                 </form>
               </>
@@ -758,10 +1191,26 @@ export default function AdminPage() {
         {/* TAB 4: CREATE NEW BLOG */}
         {activeTab === 'create-blog' && (
           <div className="bg-navyBlue border border-slate-800 rounded-2xl p-6 md:p-8 max-w-xl shadow-2xl">
-            <h3 className="text-xl font-bold text-white mb-1 flex items-center gap-2">
-              <PlusCircle className="w-5 h-5 text-primaryCyan" /> Create New Blog Post
-            </h3>
-            <p className="text-xs text-slate-400 mb-6">Write and publish a new blog post directly to your website.</p>
+            <div className="flex items-center justify-between mb-1">
+              <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                <PlusCircle className="w-5 h-5 text-primaryCyan" /> {editingBlogId ? 'Edit Blog Post' : 'Create New Blog Post'}
+              </h3>
+              {editingBlogId && (
+                <button 
+                  onClick={() => {
+                    setEditingBlogId(null);
+                    setBlogTitle('');
+                    setBlogContent('');
+                    setBlogAuthor('');
+                    setBlogImageUrl('');
+                  }}
+                  className="text-xs text-slate-400 hover:text-white underline"
+                >
+                  Cancel Edit
+                </button>
+              )}
+            </div>
+            <p className="text-xs text-slate-400 mb-6">{editingBlogId ? 'Update the details for this blog post.' : 'Write and publish a new blog post directly to your website.'}</p>
 
             {blogMsg && (
               <div className="p-3 bg-emerald-500/20 border border-emerald-500 text-emerald-300 text-xs rounded-xl mb-6 flex items-center gap-2">
@@ -850,7 +1299,7 @@ export default function AdminPage() {
                 disabled={blogSubmitting || isUploadingImage}
                 className="w-full bg-gradient-to-r from-primaryCyan to-blue-600 hover:brightness-110 text-navyDark font-extrabold py-3 rounded-xl text-xs uppercase tracking-wider shadow-glow transition-all disabled:opacity-50"
               >
-                {blogSubmitting ? 'Publishing Blog...' : 'PUBLISH BLOG'}
+                {blogSubmitting ? 'Saving Blog...' : (editingBlogId ? 'UPDATE BLOG POST' : 'PUBLISH BLOG')}
               </button>
             </form>
           </div>

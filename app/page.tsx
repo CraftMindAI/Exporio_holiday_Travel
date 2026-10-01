@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import dynamic from 'next/dynamic';
-import { Compass, Sparkles, Globe } from 'lucide-react';
+import { MapPin, Sparkles, Mountain, Palmtree, Castle, TreePine, Umbrella, Building2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { TourPackage } from '@/types';
 import { getTours } from '@/lib/supabase';
 
@@ -12,6 +12,110 @@ const TourPackageCard = dynamic(() => import('@/components/TourPackageCard'), { 
 const PopularDestinations = dynamic(() => import('@/components/PopularDestinations'), { ssr: false });
 const Testimonials = dynamic(() => import('@/components/Testimonials'), { ssr: false });
 const InquiryModal = dynamic(() => import('@/components/InquiryModal'), { ssr: false });
+
+// Destination display name mapping
+const DESTINATION_NAMES: Record<string, string> = {
+  'andamantourpackage': 'Andaman',
+  'darjeelingtourpackages': 'Darjeeling',
+  'gangtoktourpackage': 'Gangtok',
+  'shimlamanalitourpackage': 'Shimla Manali',
+  'kashmirtourpackage': 'Kashmir',
+  'kerala-tour-packages': 'Kerala',
+  'bhutan-tour-packages': 'Bhutan',
+  'thailand-tour-package': 'Thailand',
+  'bali-tour-packages': 'Bali',
+  'maldives-tour-package': 'Maldives',
+  'sikkim-tour-package': 'Sikkim',
+  'leh-ladakh-package': 'Leh Ladakh',
+  'lakshadweep-tour-packages': 'Lakshadweep',
+  'uttarakhand-tour-package': 'Uttarakhand',
+  'spiti-valley-tour-packages': 'Spiti Valley',
+  'himachal-tour-package': 'Himachal Pradesh',
+  'rajasthan-tour-packages': 'Rajasthan',
+};
+
+// Destination icons (Lucide arrow-style icons)
+const DESTINATION_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  'andamantourpackage': Umbrella,
+  'darjeelingtourpackages': Mountain,
+  'gangtoktourpackage': Mountain,
+  'shimlamanalitourpackage': Mountain,
+  'kashmirtourpackage': Mountain,
+  'kerala-tour-packages': Palmtree,
+  'bhutan-tour-packages': TreePine,
+  'thailand-tour-package': Palmtree,
+  'bali-tour-packages': Palmtree,
+  'maldives-tour-package': Umbrella,
+  'sikkim-tour-package': Mountain,
+  'leh-ladakh-package': Mountain,
+  'lakshadweep-tour-packages': Umbrella,
+  'uttarakhand-tour-package': Mountain,
+  'spiti-valley-tour-packages': Mountain,
+  'himachal-tour-package': Mountain,
+  'rajasthan-tour-packages': Castle,
+};
+
+function DestinationSection({
+  location,
+  tours,
+  displayName,
+  Icon,
+  onEnquire,
+}: {
+  location: string;
+  tours: TourPackage[];
+  displayName: string;
+  Icon: React.ComponentType<{ className?: string }>;
+  onEnquire: (tour: TourPackage) => void;
+}) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const scrollLeft = () => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({ left: -320, behavior: 'smooth' });
+    }
+  };
+
+  const scrollRight = () => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({ left: 320, behavior: 'smooth' });
+    }
+  };
+
+  return (
+    <div className="mb-12 last:mb-0">
+      {/* Destination Header with Arrows */}
+      <div className="flex items-center justify-between mb-6 border-b border-slate-700 pb-3">
+        <div className="flex items-center gap-3">
+          <Icon className="w-6 h-6 text-primaryCyan" />
+          <h3 className="text-xl font-bold text-white">{displayName}</h3>
+          <span className="text-xs font-semibold text-slate-400 bg-slate-800 px-2.5 py-1 rounded-full">
+            {tours.length} package{tours.length !== 1 ? 's' : ''}
+          </span>
+        </div>
+
+        {/* Left / Right Arrow Icons */}
+        <div className="flex items-center gap-2">
+          <ChevronLeft onClick={scrollLeft} className="w-5 h-5 text-slate-300 hover:text-primaryCyan cursor-pointer transition-colors" />
+          <ChevronRight onClick={scrollRight} className="w-5 h-5 text-slate-300 hover:text-primaryCyan cursor-pointer transition-colors" />
+        </div>
+      </div>
+
+      {/* Horizontal Slider for this Destination */}
+      <div
+        ref={scrollRef}
+        className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+      >
+        {tours.map((tour) => (
+          <div key={tour.id} className="min-w-[300px] sm:min-w-[320px] snap-start">
+            <TourPackageCard tour={tour} onEnquire={onEnquire} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function HomePage() {
   const [tours, setTours] = useState<TourPackage[]>([]);
@@ -88,8 +192,30 @@ export default function HomePage() {
     setInquiryModalOpen(true);
   };
 
-  const domesticTours = filteredTours.filter((t) => t.category === 'domestic');
-  const internationalTours = filteredTours.filter((t) => t.category === 'international');
+  // Group tours by destination/location
+  const toursByDestination = useMemo(() => {
+    const grouped: Record<string, TourPackage[]> = {};
+    filteredTours.forEach((tour) => {
+      const key = tour.location;
+      if (!grouped[key]) {
+        grouped[key] = [];
+      }
+      grouped[key].push(tour);
+    });
+    return grouped;
+  }, [filteredTours]);
+
+  // Sort destinations: domestic first, then international
+  const sortedDestinations = useMemo(() => {
+    const destinations = Object.keys(toursByDestination);
+    return destinations.sort((a, b) => {
+      const aIsDomestic = !['thailand-tour-package', 'bali-tour-packages', 'maldives-tour-package'].includes(a);
+      const bIsDomestic = !['thailand-tour-package', 'bali-tour-packages', 'maldives-tour-package'].includes(b);
+      if (aIsDomestic && !bIsDomestic) return -1;
+      if (!aIsDomestic && bIsDomestic) return 1;
+      return a.localeCompare(b);
+    });
+  }, [toursByDestination]);
 
   return (
     <>
@@ -103,7 +229,7 @@ export default function HomePage() {
       <section className="py-12 sm:py-16 relative overflow-hidden bg-gradient-to-bl from-navyDark via-navyBlue to-primaryCyan/20 text-white">
         {/* Decorative Glow */}
         <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-[500px] h-[500px] bg-primaryCyan/5 rounded-full blur-[120px] pointer-events-none" />
-        
+
         <div className="max-w-7xl mx-auto px-4 relative z-10">
           {/* Section Header */}
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 sm:mb-10 gap-4">
@@ -121,68 +247,45 @@ export default function HomePage() {
             <div className="flex flex-wrap items-center justify-center bg-slate-800 p-1 sm:p-1.5 rounded-xl text-[10px] sm:text-xs font-extrabold gap-1">
               <button
                 onClick={() => handleTabChange('all')}
-                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-all touch-manipulation ${
-                  activeTab === 'all'
-                    ? 'bg-primaryCyan text-navyDark shadow'
-                    : 'text-slate-300 hover:text-white'
-                }`}
+                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-all touch-manipulation ${activeTab === 'all'
+                  ? 'bg-primaryCyan text-navyDark shadow'
+                  : 'text-slate-300 hover:text-white'
+                  }`}
               >
                 All Packages
               </button>
               <button
                 onClick={() => handleTabChange('domestic')}
-                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-all touch-manipulation ${
-                  activeTab === 'domestic'
-                    ? 'bg-primaryCyan text-navyDark shadow'
-                    : 'text-slate-300 hover:text-white'
-                }`}
+                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-all touch-manipulation ${activeTab === 'domestic'
+                  ? 'bg-primaryCyan text-navyDark shadow'
+                  : 'text-slate-300 hover:text-white'
+                  }`}
               >
                 Domestic (India)
               </button>
               <button
                 onClick={() => handleTabChange('international')}
-                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-all touch-manipulation ${
-                  activeTab === 'international'
-                    ? 'bg-primaryCyan text-navyDark shadow'
-                    : 'text-slate-300 hover:text-white'
-                }`}
+                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-all touch-manipulation ${activeTab === 'international'
+                  ? 'bg-primaryCyan text-navyDark shadow'
+                  : 'text-slate-300 hover:text-white'
+                  }`}
               >
                 International
               </button>
             </div>
           </div>
 
-          {/* Domestic Tours */}
-          {(activeTab === 'all' || activeTab === 'domestic') && (
-            <div className="mb-16">
-              <div className="flex items-center gap-2 mb-6 border-b border-slate-700 pb-3">
-                <Compass className="w-5 h-5 text-primaryCyan" />
-                <h3 className="text-xl font-bold text-white">Top India Domestic Packages</h3>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {domesticTours.map((tour) => (
-                  <TourPackageCard key={tour.id} tour={tour} onEnquire={openInquiry} />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* International Tours */}
-          {(activeTab === 'all' || activeTab === 'international') && (
-            <div>
-              <div className="flex items-center gap-2 mb-6 border-b border-slate-700 pb-3">
-                <Globe className="w-5 h-5 text-primaryCyan" />
-                <h3 className="text-xl font-bold text-white">International Holiday Deals</h3>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {internationalTours.map((tour) => (
-                  <TourPackageCard key={tour.id} tour={tour} onEnquire={openInquiry} />
-                ))}
-              </div>
-            </div>
-          )}
+          {/* Tours Grouped by Destination */}
+          {sortedDestinations.map((location) => (
+            <DestinationSection
+              key={location}
+              location={location}
+              tours={toursByDestination[location]}
+              displayName={DESTINATION_NAMES[location] || location}
+              Icon={DESTINATION_ICONS[location] || MapPin}
+              onEnquire={openInquiry}
+            />
+          ))}
         </div>
       </section>
 
