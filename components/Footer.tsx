@@ -22,9 +22,9 @@ export default function Footer() {
   };
 
   return (
-    <footer className="bg-navyDark/90 backdrop-blur-md text-slate-300 pt-16 pb-8 border-t border-slate-800 relative z-20">
+    <footer className="bg-navyDark/90 backdrop-blur-md text-slate-300 pt-12 sm:pt-16 pb-6 sm:pb-8 border-t border-slate-800 relative z-20">
       <div className="max-w-7xl mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 mb-8 sm:mb-12">
           {/* Col 1: About */}
           <div className="space-y-4">
             <Link href="/" className="flex items-center">
@@ -179,9 +179,9 @@ export default function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-8 border-t border-slate-800 flex flex-col md:flex-row items-center justify-between text-xs text-slate-500 gap-4">
+        <div className="pt-6 sm:pt-8 border-t border-slate-800 flex flex-col md:flex-row items-center justify-between text-[11px] sm:text-xs text-slate-500 gap-3 sm:gap-4">
           <p>© {new Date().getFullYear()} Exporio Holidays. All Rights Reserved.</p>
-          <div className="flex flex-wrap items-center justify-center md:justify-end gap-4 text-center">
+          <div className="flex flex-wrap items-center justify-center md:justify-end gap-3 sm:gap-4 text-center">
             <Link href="/" className="hover:text-slate-400">Privacy Policy</Link>
             <Link href="/" className="hover:text-slate-400">Terms & Conditions</Link>
             <Link href="/" className="hover:text-slate-400">Cancellation & Refund Policy</Link>

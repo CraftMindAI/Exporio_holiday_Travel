@@ -47,19 +47,19 @@ export default function LocationPage() {
           <ArrowLeft className="w-4 h-4" /> Back to Home
         </Link>
 
-        <div className="mb-8 border-b border-slate-700/50 pb-6">
-          <div className="flex items-center gap-2 text-primaryCyan text-xs font-extrabold uppercase tracking-wider mb-1">
-            <MapPin className="w-4 h-4" /> Explore Destination
+        <div className="mb-6 sm:mb-8 border-b border-slate-700/50 pb-4 sm:pb-6">
+          <div className="flex items-center gap-2 text-primaryCyan text-[10px] sm:text-xs font-extrabold uppercase tracking-wider mb-1">
+            <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Explore Destination
           </div>
-          <h1 className="text-3xl md:text-4xl font-extrabold text-white">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white">
             {locationTitle} TOUR PACKAGES
           </h1>
-          <p className="text-slate-300 text-sm mt-2">
+          <p className="text-slate-300 text-xs sm:text-sm mt-1 sm:mt-2">
             Browse carefully selected holiday itineraries with transparent pricing and 24/7 on-trip assistance.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {tours.map((t) => (
             <TourPackageCard
               key={t.id}

@@ -57,55 +57,55 @@ export default function ContactPage() {
         </div>
 
         {/* Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
           {/* Contact Details Cards */}
-          <div className="space-y-4">
-            <div className="bg-navyDark/60 backdrop-blur-md p-6 rounded-2xl border border-slate-700/50 shadow-sm flex items-start gap-4">
-              <div className="w-12 h-12 rounded-xl bg-primaryCyan/10 text-primaryCyan flex items-center justify-center flex-shrink-0">
-                <Phone className="w-6 h-6" />
+          <div className="space-y-3 sm:space-y-4">
+            <div className="bg-navyDark/60 backdrop-blur-md p-4 sm:p-6 rounded-2xl border border-slate-700/50 shadow-sm flex items-start gap-3 sm:gap-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primaryCyan/10 text-primaryCyan flex items-center justify-center flex-shrink-0">
+                <Phone className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
               <div>
-                <h4 className="font-bold text-sm text-white">Phone & WhatsApp</h4>
-                <a href="tel:+919811980218" className="text-xs text-slate-300 hover:text-primaryCyan block mt-1 font-semibold transition-colors">
+                <h4 className="font-bold text-xs sm:text-sm text-white">Phone & WhatsApp</h4>
+                <a href="tel:+919811980218" className="text-[11px] sm:text-xs text-slate-300 hover:text-primaryCyan block mt-1 font-semibold transition-colors">
                   +91 9811980218 (24/7 Support)
                 </a>
               </div>
             </div>
 
-            <div className="bg-navyDark/60 backdrop-blur-md p-6 rounded-2xl border border-slate-700/50 shadow-sm flex items-start gap-4">
-              <div className="w-12 h-12 rounded-xl bg-primaryCyan/10 text-primaryCyan flex items-center justify-center flex-shrink-0">
-                <Mail className="w-6 h-6" />
+            <div className="bg-navyDark/60 backdrop-blur-md p-4 sm:p-6 rounded-2xl border border-slate-700/50 shadow-sm flex items-start gap-3 sm:gap-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primaryCyan/10 text-primaryCyan flex items-center justify-center flex-shrink-0">
+                <Mail className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
               <div>
-                <h4 className="font-bold text-sm text-white">Email Address</h4>
-                <a href="mailto:contact@exporioholidays.com" className="text-xs text-slate-300 hover:text-primaryCyan block mt-1 font-semibold transition-colors">
+                <h4 className="font-bold text-xs sm:text-sm text-white">Email Address</h4>
+                <a href="mailto:contact@exporioholidays.com" className="text-[11px] sm:text-xs text-slate-300 hover:text-primaryCyan block mt-1 font-semibold transition-colors">
                   contact@exporioholidays.com
                 </a>
-                <a href="mailto:contact@etripto.in" className="text-xs text-slate-400 hover:text-primaryCyan block mt-0.5 transition-colors">
+                <a href="mailto:contact@etripto.in" className="text-[11px] sm:text-xs text-slate-400 hover:text-primaryCyan block mt-0.5 transition-colors">
                   contact@etripto.in
                 </a>
               </div>
             </div>
 
-            <div className="bg-navyDark/60 backdrop-blur-md p-6 rounded-2xl border border-slate-700/50 shadow-sm flex items-start gap-4">
-              <div className="w-12 h-12 rounded-xl bg-primaryCyan/10 text-primaryCyan flex items-center justify-center flex-shrink-0">
-                <MapPin className="w-6 h-6" />
+            <div className="bg-navyDark/60 backdrop-blur-md p-4 sm:p-6 rounded-2xl border border-slate-700/50 shadow-sm flex items-start gap-3 sm:gap-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primaryCyan/10 text-primaryCyan flex items-center justify-center flex-shrink-0">
+                <MapPin className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
               <div>
-                <h4 className="font-bold text-sm text-white">Head Office Location</h4>
-                <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                <h4 className="font-bold text-xs sm:text-sm text-white">Head Office Location</h4>
+                <p className="text-[11px] sm:text-xs text-slate-300 mt-1 leading-relaxed">
                   Maduari, TamilNadu - 624220, India
                 </p>
               </div>
             </div>
 
-            <div className="bg-navyDark/60 backdrop-blur-md p-6 rounded-2xl border border-slate-700/50 shadow-sm flex items-start gap-4">
-              <div className="w-12 h-12 rounded-xl bg-primaryCyan/10 text-primaryCyan flex items-center justify-center flex-shrink-0">
-                <Clock className="w-6 h-6" />
+            <div className="bg-navyDark/60 backdrop-blur-md p-4 sm:p-6 rounded-2xl border border-slate-700/50 shadow-sm flex items-start gap-3 sm:gap-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primaryCyan/10 text-primaryCyan flex items-center justify-center flex-shrink-0">
+                <Clock className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
               <div>
-                <h4 className="font-bold text-sm text-white">Working Hours</h4>
-                <p className="text-xs text-slate-300 mt-1">
+                <h4 className="font-bold text-xs sm:text-sm text-white">Working Hours</h4>
+                <p className="text-[11px] sm:text-xs text-slate-300 mt-1">
                   Monday - Sunday: 9:00 AM - 9:00 PM IST
                 </p>
               </div>
@@ -113,9 +113,9 @@ export default function ContactPage() {
           </div>
 
           {/* Form */}
-          <div className="lg:col-span-2 bg-navyDark/60 backdrop-blur-md p-8 rounded-2xl border border-slate-700/50 shadow-card">
-            <h3 className="text-2xl font-extrabold text-white mb-2">Send Us a Message</h3>
-            <p className="text-xs text-slate-400 mb-6">Fill out the form below and our team will get back to you within 15 minutes.</p>
+          <div className="lg:col-span-2 bg-navyDark/60 backdrop-blur-md p-5 sm:p-6 lg:p-8 rounded-2xl border border-slate-700/50 shadow-card">
+            <h3 className="text-xl sm:text-2xl font-extrabold text-white mb-2">Send Us a Message</h3>
+            <p className="text-[11px] sm:text-xs text-slate-400 mb-4 sm:mb-6">Fill out the form below and our team will get back to you within 15 minutes.</p>
 
             {submitted ? (
               <div className="p-6 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-center space-y-3">

@@ -73,10 +73,10 @@ export default function BlogsPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           {blogs.map((post) => (
             <Link href={`/news/${post.slug}`} key={post.id} className="bg-navyDark/60 backdrop-blur-md rounded-2xl border border-slate-700/50 shadow-card overflow-hidden flex flex-col group cursor-pointer hover:shadow-glow transition-all">
-              <div className="relative h-48 overflow-hidden border-b border-slate-700/50">
+              <div className="relative h-40 sm:h-48 overflow-hidden border-b border-slate-700/50">
                 <img
                   src={post.image_url}
                   alt={post.title}
@@ -84,25 +84,25 @@ export default function BlogsPage() {
                 />
               </div>
 
-              <div className="p-5 flex-1 flex flex-col justify-between">
+              <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between">
                 <div>
-                  <div className="flex items-center gap-4 text-slate-400 text-xs mb-2">
-                    <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> {post.created_at ? new Date(post.created_at).toLocaleDateString() : 'Recently'}</span>
-                    <span className="flex items-center gap-1"><User className="w-3.5 h-3.5" /> {post.author}</span>
+                  <div className="flex items-center gap-3 text-slate-400 text-[10px] sm:text-xs mb-2">
+                    <span className="flex items-center gap-1"><Calendar className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> {post.created_at ? new Date(post.created_at).toLocaleDateString() : 'Recently'}</span>
+                    <span className="flex items-center gap-1"><User className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> {post.author}</span>
                   </div>
 
-                  <h3 className="font-extrabold text-white text-base leading-snug mb-2 group-hover:text-primaryCyan transition-colors">
+                  <h3 className="font-extrabold text-white text-sm sm:text-base leading-snug mb-2 group-hover:text-primaryCyan transition-colors">
                     {post.title}
                   </h3>
 
-                  <p className="text-xs text-slate-300 line-clamp-3 leading-relaxed mb-4">
+                  <p className="text-[11px] sm:text-xs text-slate-300 line-clamp-3 leading-relaxed mb-3 sm:mb-4">
                     {post.content}
                   </p>
                 </div>
 
-                <div className="pt-3 border-t border-slate-700/50 flex items-center justify-between">
-                  <span className="text-xs font-bold text-primaryCyan group-hover:underline flex items-center gap-1">
-                    Read Article <ArrowRight className="w-3.5 h-3.5" />
+                <div className="pt-2 sm:pt-3 border-t border-slate-700/50 flex items-center justify-between">
+                  <span className="text-[11px] sm:text-xs font-bold text-primaryCyan group-hover:underline flex items-center gap-1">
+                    Read Article <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                   </span>
                 </div>
               </div>

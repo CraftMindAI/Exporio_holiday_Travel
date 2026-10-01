@@ -60,10 +60,10 @@ export default function PopularDestinations() {
             {/* Left Arrow */}
             <button
               onClick={() => scroll('left')}
-              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 md:-translate-x-6 z-10 bg-white/90 shadow-[0_4px_12px_rgba(0,0,0,0.1)] p-3 rounded-full text-[#122a7f] hover:bg-white hover:scale-110 transition-all opacity-0 group-hover:opacity-100 hidden sm:block focus:outline-none"
+              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-2 sm:-translate-x-3 md:-translate-x-6 z-10 bg-white/90 shadow-[0_4px_12px_rgba(0,0,0,0.1)] p-2 sm:p-3 rounded-full text-[#122a7f] hover:bg-white hover:scale-110 transition-all opacity-0 group-hover:opacity-100 hidden sm:block focus:outline-none"
               aria-label="Scroll left"
             >
-              <ChevronLeft className="w-6 h-6" />
+              <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
 
             {/* Scrollable Track */}
@@ -78,10 +78,10 @@ export default function PopularDestinations() {
               `}} />
               
               {destinations.map((dest) => (
-                <div key={dest.id} className="min-w-[280px] md:min-w-[300px] snap-start shrink-0 hide-scrollbar">
+                <div key={dest.id} className="min-w-[260px] sm:min-w-[280px] md:min-w-[300px] snap-start shrink-0 hide-scrollbar">
                   <Link
                     href={`/location/${dest.slug}`}
-                    className="group relative h-72 md:h-80 rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 block bg-slate-100 w-full"
+                    className="group relative h-64 sm:h-72 md:h-80 rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 block bg-slate-100 w-full"
                   >
                     {/* Background Image */}
                     <img
@@ -106,10 +106,10 @@ export default function PopularDestinations() {
             {/* Right Arrow */}
             <button
               onClick={() => scroll('right')}
-              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 md:translate-x-6 z-10 bg-white/90 shadow-[0_4px_12px_rgba(0,0,0,0.1)] p-3 rounded-full text-[#122a7f] hover:bg-white hover:scale-110 transition-all opacity-0 group-hover:opacity-100 hidden sm:block focus:outline-none"
+              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-2 sm:translate-x-3 md:translate-x-6 z-10 bg-white/90 shadow-[0_4px_12px_rgba(0,0,0,0.1)] p-2 sm:p-3 rounded-full text-[#122a7f] hover:bg-white hover:scale-110 transition-all opacity-0 group-hover:opacity-100 hidden sm:block focus:outline-none"
               aria-label="Scroll right"
             >
-              <ChevronRight className="w-6 h-6" />
+              <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
           </div>
         )}

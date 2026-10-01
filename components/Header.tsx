@@ -8,6 +8,8 @@ import { supabase } from '@/lib/supabase';
 
 export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [tourDropdownOpen, setTourDropdownOpen] = useState(false);
+  const [placeDropdownOpen, setPlaceDropdownOpen] = useState(false);
   const [authModal, setAuthModal] = useState<boolean>(false);
   const [authEmail, setAuthEmail] = useState('');
   const [authPassword, setAuthPassword] = useState('');
@@ -62,26 +64,36 @@ export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }
     }
   };
 
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+    // Close dropdowns when toggling main menu
+    if (mobileMenuOpen) {
+      setTourDropdownOpen(false);
+      setPlaceDropdownOpen(false);
+    }
+  };
+
   return (
     <>
       {/* Top Bar */}
       <header className="bg-navyBlue/90 backdrop-blur-md text-white text-xs py-2 px-4 border-b border-slate-800 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-2">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
           {/* Left contact info */}
-          <div className="flex flex-wrap items-center gap-4 text-slate-300">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-slate-300">
             <a href={`mailto:${siteConfig.emailAddress}`} className="flex items-center gap-1.5 hover:text-primaryCyan transition-colors">
               <Mail className="w-3.5 h-3.5 text-primaryCyan" />
-              <span>{siteConfig.emailAddress}</span>
+              <span className="hidden xs:inline sm:inline">{siteConfig.emailAddress}</span>
+              <span className="xs:hidden sm:hidden">Email Us</span>
             </a>
-            <div className="hidden sm:flex items-center gap-1.5">
+            <div className="hidden md:flex items-center gap-1.5">
               <MapPin className="w-3.5 h-3.5 text-primaryCyan" />
               <span>{siteConfig.headOfficeAddress}</span>
             </div>
           </div>
 
           {/* Right socials & ONLY Sign In button */}
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 pr-4 border-r border-slate-700">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 pr-3 sm:pr-4 border-r border-slate-700">
               <a href={siteConfig.socialLinks.facebook} target="_blank" rel="noreferrer" className="p-1 hover:text-primaryCyan transition-colors" title="Facebook">
                 <Facebook className="w-3.5 h-3.5" />
               </a>
@@ -135,7 +147,7 @@ export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }
               <img
                 src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/exporio-logo.jpeg`}
                 alt="Exporio Holidays"
-                className="relative h-14 w-auto rounded-lg object-cover shadow-2xl"
+                className="relative h-10 sm:h-12 lg:h-14 w-auto rounded-lg object-cover shadow-2xl"
               />
             </div>
           </Link>
@@ -214,8 +226,9 @@ export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }
 
           {/* Mobile hamburger menu toggle */}
           <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden p-2 text-slate-300 hover:text-primaryCyan"
+            onClick={toggleMobileMenu}
+            className="lg:hidden p-2 text-slate-300 hover:text-primaryCyan touch-manipulation"
+            aria-label="Toggle mobile menu"
           >
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
@@ -223,21 +236,73 @@ export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }
 
         {/* Mobile Dropdown Nav */}
         {mobileMenuOpen && (
-          <div className="lg:hidden bg-navyBlue/95 backdrop-blur-md border-t border-slate-800 px-4 py-4 space-y-3">
-            <Link href="/" className="block py-2 text-sm font-semibold hover:text-primaryCyan">
+          <div className="lg:hidden bg-navyBlue/95 backdrop-blur-md border-t border-slate-800 px-4 py-4 space-y-1 max-h-[calc(100dvh-120px)] overflow-y-auto no-scrollbar safe-bottom">
+            <Link href="/" className="block py-3 text-sm font-semibold hover:text-primaryCyan rounded-lg hover:bg-slate-800/50 px-3 transition-colors">
               Home
             </Link>
-            <Link href="/location/sikkim-tour-package" className="block py-2 text-sm font-semibold hover:text-primaryCyan">
-              Tour Packages
-            </Link>
-            <Link href="/contact" className="block py-2 text-sm font-semibold hover:text-primaryCyan">
+            
+            {/* Tour Packages Accordion */}
+            <div className="border-t border-slate-800/50">
+              <button
+                onClick={() => setTourDropdownOpen(!tourDropdownOpen)}
+                className="w-full flex items-center justify-between py-3 text-sm font-semibold hover:text-primaryCyan rounded-lg hover:bg-slate-800/50 px-3 transition-colors"
+              >
+                <span>Tour Packages</span>
+                <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${tourDropdownOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {tourDropdownOpen && (
+                <div className="pl-4 space-y-1 pb-2">
+                  <Link href="/location/sikkim-tour-package" className="block py-2.5 text-xs font-bold capitalize text-slate-300 hover:text-primaryCyan rounded-lg hover:bg-slate-800/50 px-3 transition-colors">
+                    Sikkim & Gangtok
+                  </Link>
+                  <Link href="/location/kashmir-tour-package" className="block py-2.5 text-xs font-bold capitalize text-slate-300 hover:text-primaryCyan rounded-lg hover:bg-slate-800/50 px-3 transition-colors">
+                    Kashmir Paradise
+                  </Link>
+                  <Link href="/location/darjeeling-tour-packages" className="block py-2.5 text-xs font-bold capitalize text-slate-300 hover:text-primaryCyan rounded-lg hover:bg-slate-800/50 px-3 transition-colors">
+                    Darjeeling
+                  </Link>
+                  <Link href="/location/kerala-tour-packages" className="block py-2.5 text-xs font-bold capitalize text-slate-300 hover:text-primaryCyan rounded-lg hover:bg-slate-800/50 px-3 transition-colors">
+                    Kerala Backwaters
+                  </Link>
+                  <Link href="/location/andaman-tour-package" className="block py-2.5 text-xs font-bold capitalize text-slate-300 hover:text-primaryCyan rounded-lg hover:bg-slate-800/50 px-3 transition-colors">
+                    Andaman Islands
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            {/* Place To Visit Accordion */}
+            <div className="border-t border-slate-800/50">
+              <button
+                onClick={() => setPlaceDropdownOpen(!placeDropdownOpen)}
+                className="w-full flex items-center justify-between py-3 text-sm font-semibold hover:text-primaryCyan rounded-lg hover:bg-slate-800/50 px-3 transition-colors"
+              >
+                <span>Place To Visit</span>
+                <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${placeDropdownOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {placeDropdownOpen && (
+                <div className="pl-4 space-y-1 pb-2">
+                  <Link href="/location/bhutan-tour-packages" className="block py-2.5 text-xs font-bold capitalize text-slate-300 hover:text-primaryCyan rounded-lg hover:bg-slate-800/50 px-3 transition-colors">
+                    Bhutan Himalayan Tour
+                  </Link>
+                  <Link href="/location/bali-tour-packages" className="block py-2.5 text-xs font-bold capitalize text-slate-300 hover:text-primaryCyan rounded-lg hover:bg-slate-800/50 px-3 transition-colors">
+                    Bali Island Escape
+                  </Link>
+                  <Link href="/location/shimla-manali-tour-package" className="block py-2.5 text-xs font-bold capitalize text-slate-300 hover:text-primaryCyan rounded-lg hover:bg-slate-800/50 px-3 transition-colors">
+                    Shimla Manali
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            <Link href="/contact" className="block py-3 text-sm font-semibold hover:text-primaryCyan rounded-lg hover:bg-slate-800/50 px-3 transition-colors">
               Contact Us
             </Link>
-            <Link href="/news" className="block py-2 text-sm font-semibold hover:text-primaryCyan">
+            <Link href="/news" className="block py-3 text-sm font-semibold hover:text-primaryCyan rounded-lg hover:bg-slate-800/50 px-3 transition-colors">
               Blogs
             </Link>
 
-            <div className="pt-3 border-t border-slate-700 flex items-center gap-3">
+            <div className="pt-3 mt-2 border-t border-slate-700 flex items-center gap-3 px-3">
               <Phone className="w-5 h-5 text-primaryCyan" />
               <a href={siteConfig.phoneCallUrl} className="font-bold text-sm text-white">
                 {siteConfig.phoneNumber} (24/7 Support)

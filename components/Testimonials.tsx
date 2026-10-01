@@ -42,33 +42,33 @@ export default function Testimonials() {
 
       <div className="max-w-7xl mx-auto px-4 relative z-10">
         {/* Why Choose Us Badges */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16 border-b border-slate-800 pb-12">
-          <div className="flex items-center gap-3 p-4 bg-navyBlue/60 rounded-xl border border-slate-800">
-            <ShieldCheck className="w-8 h-8 text-primaryCyan flex-shrink-0" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-12 sm:mb-16 border-b border-slate-800 pb-8 sm:pb-12">
+          <div className="flex items-center gap-3 p-3 sm:p-4 bg-navyBlue/60 rounded-xl border border-slate-800">
+            <ShieldCheck className="w-7 h-7 sm:w-8 sm:h-8 text-primaryCyan flex-shrink-0" />
             <div>
-              <h4 className="font-bold text-sm text-white">100% Verified Hotels</h4>
-              <p className="text-[11px] text-slate-400">Handpicked luxury & budget stays</p>
+              <h4 className="font-bold text-xs sm:text-sm text-white">100% Verified Hotels</h4>
+              <p className="text-[10px] sm:text-[11px] text-slate-400">Handpicked luxury & budget stays</p>
             </div>
           </div>
-          <div className="flex items-center gap-3 p-4 bg-navyBlue/60 rounded-xl border border-slate-800">
-            <Award className="w-8 h-8 text-accentGold flex-shrink-0" />
+          <div className="flex items-center gap-3 p-3 sm:p-4 bg-navyBlue/60 rounded-xl border border-slate-800">
+            <Award className="w-7 h-7 sm:w-8 sm:h-8 text-accentGold flex-shrink-0" />
             <div>
-              <h4 className="font-bold text-sm text-white">Best Price Guarantee</h4>
-              <p className="text-[11px] text-slate-400">Transparent & direct rates</p>
+              <h4 className="font-bold text-xs sm:text-sm text-white">Best Price Guarantee</h4>
+              <p className="text-[10px] sm:text-[11px] text-slate-400">Transparent & direct rates</p>
             </div>
           </div>
-          <div className="flex items-center gap-3 p-4 bg-navyBlue/60 rounded-xl border border-slate-800">
-            <HeartHandshake className="w-8 h-8 text-emerald-400 flex-shrink-0" />
+          <div className="flex items-center gap-3 p-3 sm:p-4 bg-navyBlue/60 rounded-xl border border-slate-800">
+            <HeartHandshake className="w-7 h-7 sm:w-8 sm:h-8 text-emerald-400 flex-shrink-0" />
             <div>
-              <h4 className="font-bold text-sm text-white">Customized Packages</h4>
-              <p className="text-[11px] text-slate-400">Tailored to your itinerary</p>
+              <h4 className="font-bold text-xs sm:text-sm text-white">Customized Packages</h4>
+              <p className="text-[10px] sm:text-[11px] text-slate-400">Tailored to your itinerary</p>
             </div>
           </div>
-          <div className="flex items-center gap-3 p-4 bg-navyBlue/60 rounded-xl border border-slate-800">
-            <Headphones className="w-8 h-8 text-blue-400 flex-shrink-0" />
+          <div className="flex items-center gap-3 p-3 sm:p-4 bg-navyBlue/60 rounded-xl border border-slate-800">
+            <Headphones className="w-7 h-7 sm:w-8 sm:h-8 text-blue-400 flex-shrink-0" />
             <div>
-              <h4 className="font-bold text-sm text-white">24/7 On-Trip Support</h4>
-              <p className="text-[11px] text-slate-400">Dedicated tour coordinator</p>
+              <h4 className="font-bold text-xs sm:text-sm text-white">24/7 On-Trip Support</h4>
+              <p className="text-[10px] sm:text-[11px] text-slate-400">Dedicated tour coordinator</p>
             </div>
           </div>
         </div>

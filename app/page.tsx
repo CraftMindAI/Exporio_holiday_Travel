@@ -100,28 +100,28 @@ export default function HomePage() {
       <PopularDestinations />
 
       {/* Main Tour Packages Showcase */}
-      <section className="py-16 relative overflow-hidden bg-gradient-to-bl from-navyDark via-navyBlue to-primaryCyan/20 text-white">
+      <section className="py-12 sm:py-16 relative overflow-hidden bg-gradient-to-bl from-navyDark via-navyBlue to-primaryCyan/20 text-white">
         {/* Decorative Glow */}
         <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-[500px] h-[500px] bg-primaryCyan/5 rounded-full blur-[120px] pointer-events-none" />
         
         <div className="max-w-7xl mx-auto px-4 relative z-10">
           {/* Section Header */}
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 sm:mb-10 gap-4">
             <div>
-              <div className="inline-flex items-center gap-1.5 text-xs font-extrabold text-primaryCyan bg-primaryCyan/10 px-3 py-1 rounded-full uppercase tracking-wider mb-2">
-                <Sparkles className="w-3.5 h-3.5" />
+              <div className="inline-flex items-center gap-1.5 text-[10px] sm:text-xs font-extrabold text-primaryCyan bg-primaryCyan/10 px-3 py-1 rounded-full uppercase tracking-wider mb-2">
+                <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                 <span>Handcrafted Holiday Packages</span>
               </div>
-              <h2 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white tracking-tight">
                 Featured Tour Packages
               </h2>
             </div>
 
             {/* Category Filter Tabs */}
-            <div className="flex flex-wrap items-center justify-center bg-slate-800 p-1.5 rounded-xl text-xs font-extrabold gap-1">
+            <div className="flex flex-wrap items-center justify-center bg-slate-800 p-1 sm:p-1.5 rounded-xl text-[10px] sm:text-xs font-extrabold gap-1">
               <button
                 onClick={() => handleTabChange('all')}
-                className={`px-4 py-2 rounded-lg transition-all ${
+                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-all touch-manipulation ${
                   activeTab === 'all'
                     ? 'bg-primaryCyan text-navyDark shadow'
                     : 'text-slate-300 hover:text-white'
@@ -131,7 +131,7 @@ export default function HomePage() {
               </button>
               <button
                 onClick={() => handleTabChange('domestic')}
-                className={`px-4 py-2 rounded-lg transition-all ${
+                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-all touch-manipulation ${
                   activeTab === 'domestic'
                     ? 'bg-primaryCyan text-navyDark shadow'
                     : 'text-slate-300 hover:text-white'
@@ -141,7 +141,7 @@ export default function HomePage() {
               </button>
               <button
                 onClick={() => handleTabChange('international')}
-                className={`px-4 py-2 rounded-lg transition-all ${
+                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-all touch-manipulation ${
                   activeTab === 'international'
                     ? 'bg-primaryCyan text-navyDark shadow'
                     : 'text-slate-300 hover:text-white'
