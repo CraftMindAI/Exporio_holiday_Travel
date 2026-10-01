@@ -5,6 +5,10 @@ const nextConfig: NextConfig = {
   trailingSlash: true,
   images: {
     unoptimized: true,
+    remotePatterns: [
+      { protocol: "https", hostname: "etripto.in" },
+      { protocol: "https", hostname: "images.unsplash.com" },
+    ],
   },
   basePath: "/Exporio_holiday_Travel",
   env: {

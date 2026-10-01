@@ -8,3 +8,8 @@ export const staticTourSlugs = [
   'bali-tour-packages',
   'shimla-manali-tour-package',
 ];
+export const staticNewsSlugs = [
+  'top-10-places-in-sikkim',
+  'kashmir-tour-planning-guide',
+  'kerala-houseboat-vacation-guide',
+];
