@@ -27,7 +27,7 @@ export default function TourPackageCard({ tour, onEnquire }: TourPackageCardProp
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
 
         {/* Duration Badge */}
-        <div className="absolute top-3 left-3 bg-navyBlue/90 backdrop-blur-md text-white text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1.5 shadow">
+        <div className="absolute top-3 left-3 bg-navyBlue/80 backdrop-blur-md text-white text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1.5 shadow">
           <Clock className="w-3.5 h-3.5 text-primaryCyan" />
           <span>{tour.durationNights} Nights / {tour.durationDays} Days</span>
         </div>
@@ -117,7 +117,7 @@ export default function TourPackageCard({ tour, onEnquire }: TourPackageCardProp
                 e.stopPropagation();
                 if (onEnquire) onEnquire(tour);
               }}
-              className="bg-navyBlue hover:bg-navyDark text-white text-xs font-extrabold px-4 py-2.5 rounded-xl shadow transition-all hover:brightness-110"
+              className="bg-navyBlue/80 hover:bg-navyDark text-white text-xs font-extrabold px-4 py-2.5 rounded-xl shadow transition-all hover:brightness-110"
             >
               ENQUIRE NOW
             </button>

@@ -36,7 +36,7 @@ const TESTIMONIALS: Review[] = [
 
 export default function Testimonials() {
   return (
-    <section className="py-16 bg-navyDark text-white relative overflow-hidden">
+    <section className="py-16 bg-gradient-to-b from-navyDark via-[#1a1a4e] to-[#2d1b4e] text-white relative overflow-hidden">
       {/* Decorative gradient glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-primaryCyan/10 rounded-full blur-3xl pointer-events-none" />
 

@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { Mail, MapPin, Phone, Facebook, Instagram, Youtube, LogIn, ChevronDown, Menu, X, Plane, User } from 'lucide-react';
 import { siteConfig } from '@/config/siteConfig';
 import { supabase } from '@/lib/supabase';
@@ -13,6 +12,7 @@ export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }
   const [authEmail, setAuthEmail] = useState('');
   const [authPassword, setAuthPassword] = useState('');
   const [authMessage, setAuthMessage] = useState('');
+  const [authLoading, setAuthLoading] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
   React.useEffect(() => {
@@ -24,7 +24,8 @@ export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }
 
   const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setAuthMessage('Authenticating...');
+    setAuthLoading(true);
+    setAuthMessage(''); // Clear previous messages
     if (supabase) {
       // Use the custom RPC function to verify against the encrypted admins table
       const { data: isValid, error } = await supabase.rpc('verify_admin_login', {
@@ -34,21 +35,20 @@ export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }
 
       if (error || !isValid) {
         setAuthMessage(error?.message || 'Invalid email or password.');
+        setAuthLoading(false);
       } else {
-        setAuthMessage('Login successful! Redirecting...');
         // CRITICAL FIX: Save the admin session so the /admin page knows we are logged in!
         localStorage.setItem('exporio_admin_session', 'true');
         setIsAdmin(true);
 
         setTimeout(() => {
           setAuthModal(false);
-          if (authEmail === 'admin@exporio.com') {
-            window.location.href = '/admin';
-          }
+          window.location.href = '/admin';
         }, 1500);
       }
     } else {
       setAuthMessage('Database connection not established.');
+      setAuthLoading(false);
     }
   };
 
@@ -65,7 +65,7 @@ export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }
   return (
     <>
       {/* Top Bar */}
-      <header className="bg-navyBlue text-white text-xs py-2 px-4 border-b border-slate-800 sticky top-0 z-50">
+      <header className="bg-navyBlue/90 backdrop-blur-md text-white text-xs py-2 px-4 border-b border-slate-800 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-2">
           {/* Left contact info */}
           <div className="flex flex-wrap items-center gap-4 text-slate-300">
@@ -126,18 +126,18 @@ export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }
       </header>
 
       {/* Main Navigation */}
-      <nav className="bg-navyDark text-white shadow-[0_10px_30px_-10px_rgba(255,78,0,0.2)] relative z-40 border-b border-primaryCyan/20">
+      <nav className="bg-navyDark/90 backdrop-blur-md text-white shadow-[0_10px_30px_-10px_rgba(255,78,0,0.2)] relative z-40 border-b border-primaryCyan/20">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           {/* Brand Logo */}
           <Link href="/" className="flex items-center">
-            <Image
-              src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/exporio-logo.jpeg`}
-              alt="Exporio Holidays"
-              width={220}
-              height={65}
-              className="object-contain h-14 w-auto rounded-lg shadow-sm"
-              priority
-            />
+            <div className="relative group">
+              <div className="absolute -inset-1 bg-gradient-to-r from-primaryCyan via-[#ff6b2b] to-[#ff2a00] rounded-xl blur-sm opacity-60 group-hover:opacity-100 transition-opacity duration-300" />
+              <img
+                src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/exporio-logo.jpeg`}
+                alt="Exporio Holidays"
+                className="relative h-14 w-auto rounded-lg object-cover shadow-2xl"
+              />
+            </div>
           </Link>
 
           {/* Desktop Nav Links */}
@@ -152,7 +152,7 @@ export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }
                 Tour <ChevronDown className="w-4 h-4" />
               </span>
               {/* Dropdown */}
-              <div className="absolute top-full left-0 mt-2 w-56 bg-navyDark border border-slate-700 rounded-xl shadow-[0_10px_40px_-10px_rgba(255,78,0,0.3)] opacity-0 group-hover:opacity-100 visibility-hidden group-hover:visible transition-all duration-200 py-2 z-50">
+              <div className="absolute top-full left-0 mt-2 w-56 bg-navyDark/95 backdrop-blur-md border border-slate-700 rounded-xl shadow-[0_10px_40px_-10px_rgba(255,78,0,0.3)] opacity-0 group-hover:opacity-100 visibility-hidden group-hover:visible transition-all duration-200 py-2 z-50">
                 <Link href="/location/sikkim-tour-package" className="block px-4 py-2 hover:bg-slate-800 hover:text-primaryCyan text-xs font-bold capitalize text-slate-200">
                   Sikkim & Gangtok Packages
                 </Link>
@@ -174,7 +174,7 @@ export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }
               <span className="flex items-center gap-1 hover:text-primaryCyan transition-colors">
                 Place To Visit <ChevronDown className="w-4 h-4" />
               </span>
-              <div className="absolute top-full left-0 mt-2 w-56 bg-navyDark border border-slate-700 rounded-xl shadow-[0_10px_40px_-10px_rgba(255,78,0,0.3)] opacity-0 group-hover:opacity-100 visibility-hidden group-hover:visible transition-all duration-200 py-2 z-50">
+              <div className="absolute top-full left-0 mt-2 w-56 bg-navyDark/95 backdrop-blur-md border border-slate-700 rounded-xl shadow-[0_10px_40px_-10px_rgba(255,78,0,0.3)] opacity-0 group-hover:opacity-100 visibility-hidden group-hover:visible transition-all duration-200 py-2 z-50">
                 <Link href="/location/bhutan-tour-packages" className="block px-4 py-2 hover:bg-slate-800 hover:text-primaryCyan text-xs font-bold capitalize text-slate-200">
                   Bhutan Himalayan Tour
                 </Link>
@@ -223,7 +223,7 @@ export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }
 
         {/* Mobile Dropdown Nav */}
         {mobileMenuOpen && (
-          <div className="lg:hidden bg-navyBlue border-t border-slate-800 px-4 py-4 space-y-3">
+          <div className="lg:hidden bg-navyBlue/95 backdrop-blur-md border-t border-slate-800 px-4 py-4 space-y-3">
             <Link href="/" className="block py-2 text-sm font-semibold hover:text-primaryCyan">
               Home
             </Link>
@@ -250,7 +250,7 @@ export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }
       {/* Sign In Modal */}
       {authModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-navyBlue text-white w-full max-w-md p-6 rounded-2xl border border-slate-700 shadow-2xl relative">
+          <div className="bg-navyBlue/95 backdrop-blur-md text-white w-full max-w-md p-6 rounded-2xl border border-slate-700 shadow-2xl relative">
             <button
               onClick={() => setAuthModal(false)}
               className="absolute top-4 right-4 text-slate-400 hover:text-white"
@@ -279,7 +279,7 @@ export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }
                   value={authEmail}
                   onChange={(e) => setAuthEmail(e.target.value)}
                   placeholder="admin@exporio.com"
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-primaryCyan"
+                  className="w-full bg-slate-800/80 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-primaryCyan"
                 />
               </div>
               <div>
@@ -290,15 +290,23 @@ export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }
                   value={authPassword}
                   onChange={(e) => setAuthPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-primaryCyan"
+                  className="w-full bg-slate-800/80 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-primaryCyan"
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full bg-gradient-to-r from-primaryCyan to-blue-600 text-navyDark font-bold py-2.5 rounded-lg text-sm hover:brightness-110 transition-all shadow-glow"
+                disabled={authLoading}
+                className="w-full bg-gradient-to-r from-primaryCyan to-blue-600 text-navyDark font-bold py-2.5 rounded-lg text-sm hover:brightness-110 transition-all shadow-glow flex items-center justify-center"
               >
-                Sign In
+                {authLoading ? (
+                  <svg className="animate-spin h-5 w-5 text-navyDark" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                ) : (
+                  'Sign In'
+                )}
               </button>
             </form>
           </div>

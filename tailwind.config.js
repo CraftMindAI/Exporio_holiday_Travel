@@ -8,15 +8,15 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        navyBlue: '#0c1b54', // Exporio Deep Blue
-        navyDark: '#070f30',
-        navyLight: '#1a3399',
-        primaryCyan: '#ff4e00', // Changed to Exporio Sunset Orange
+        navyBlue: '#1a1a4e', // Exporio Deep Blue (from logo top)
+        navyDark: '#0d0d2b', // Darkest navy (backgrounds)
+        navyLight: '#2d2b6b', // Lighter navy accent
+        primaryCyan: '#ff4e00', // Exporio Sunset Orange
         secondaryCyan: '#e63e00',
         accentGold: '#FFC107',
         accentOrange: '#ff2a00',
         steelGray: '#4A5568',
-        lightBg: '#F8FAFC',
+        lightBg: '#0d0d2b', // Dark background to match logo theme
         borderGray: '#E2E8F0',
       },
       fontFamily: {

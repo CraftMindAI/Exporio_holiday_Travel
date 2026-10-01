@@ -22,27 +22,19 @@ export default function Footer() {
   };
 
   return (
-    <footer className="bg-navyDark text-slate-300 pt-16 pb-8 border-t border-slate-800 relative z-20">
+    <footer className="bg-navyDark/90 backdrop-blur-md text-slate-300 pt-16 pb-8 border-t border-slate-800 relative z-20">
       <div className="max-w-7xl mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
           {/* Col 1: About */}
           <div className="space-y-4">
-            <Link href="/" className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-primaryCyan to-blue-600 flex items-center justify-center font-bold text-white text-lg border border-slate-700 shadow-glow">
-                <Plane className="w-5 h-5 transform -rotate-45 text-white" />
-              </div>
-              <div>
-                <div className="flex items-baseline gap-1">
-                  <span className="font-black text-xl tracking-tight uppercase text-white">
-                    EXPORIO
-                  </span>
-                  <span className="font-light text-xs tracking-widest uppercase text-primaryCyan pl-1">
-                    HOLIDAYS
-                  </span>
-                </div>
-                <p className="text-[9px] font-bold text-slate-400 tracking-widest uppercase">
-                  {siteConfig.tagline}
-                </p>
+            <Link href="/" className="flex items-center">
+              <div className="relative group">
+                <div className="absolute -inset-1 bg-gradient-to-r from-primaryCyan via-[#ff6b2b] to-[#ff2a00] rounded-xl blur-sm opacity-50 group-hover:opacity-90 transition-opacity duration-300" />
+                <img
+                  src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/exporio-logo.jpeg`}
+                  alt="Exporio Holidays"
+                  className="relative h-12 w-auto rounded-lg object-cover shadow-2xl"
+                />
               </div>
             </Link>
 
@@ -169,9 +161,16 @@ export default function Footer() {
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="bg-primaryCyan text-navyDark font-extrabold text-xs px-4 py-2 rounded-lg hover:brightness-110 transition-all flex items-center gap-1"
+                    className="bg-primaryCyan text-navyDark font-extrabold text-xs px-4 py-2 rounded-lg hover:brightness-110 transition-all flex items-center justify-center gap-1"
                   >
-                    <span>Subscribe</span>
+                    {submitting ? (
+                      <svg className="animate-spin h-4 w-4 text-navyDark" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                    ) : (
+                      <span>Subscribe</span>
+                    )}
                   </button>
                 </div>
               </form>

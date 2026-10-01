@@ -8,8 +8,9 @@
 
 body {
   font-family: var(--font-sans);
-  background-color: #030f1c;
-  color: #0a192f;
+  background: linear-gradient(180deg, #0d0d2b 0%, #1a1a4e 40%, #2d1b4e 70%, #4a1a3a 100%);
+  background-attachment: fixed;
+  color: #e2e8f0;
   overflow-x: hidden;
 }
 
@@ -28,7 +29,7 @@ body::-webkit-scrollbar {
   width: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #030f1c;
+  background: #0d0d2b;
 }
 ::-webkit-scrollbar-thumb {
   background: #1e293b;

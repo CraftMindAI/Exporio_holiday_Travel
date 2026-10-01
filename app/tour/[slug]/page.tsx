@@ -64,7 +64,7 @@ export default function TourDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-navyDark text-white flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-b from-navyDark via-[#1a1a4e] to-[#2d1b4e] text-white flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <div className="w-10 h-10 border-4 border-primaryCyan border-t-transparent rounded-full animate-spin" />
           <p className="text-sm font-semibold">Loading Package Details...</p>
@@ -106,7 +106,7 @@ export default function TourDetailPage() {
   return (
     <>
       {/* Banner */}
-      <div className="relative bg-navyDark text-white pt-12 pb-20">
+      <div className="relative bg-gradient-to-b from-navyDark via-[#1a1a4e] to-[#2d1b4e] text-white pt-12 pb-20">
         <img
           src={tour.imageUrl}
           alt={tour.title}

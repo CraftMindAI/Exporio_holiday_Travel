@@ -42,7 +42,7 @@ export default function HeroBanner({ onSearch }: { onSearch?: (destination: stri
   };
 
   return (
-    <section className="relative min-h-[550px] lg:min-h-[620px] flex flex-col justify-between overflow-hidden bg-navyDark text-white">
+    <section className="relative min-h-[550px] lg:min-h-[620px] flex flex-col justify-between overflow-hidden bg-gradient-to-b from-navyDark via-[#1a1a4e] to-[#2d1b4e] text-white">
       {/* Background Image Carousel Slider */}
       {HERO_SLIDES.map((slide, index) => (
         <div

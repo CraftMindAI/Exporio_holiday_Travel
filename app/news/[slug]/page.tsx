@@ -60,7 +60,7 @@ export default function BlogPostPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-navyDark text-white flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-b from-navyDark via-[#1a1a4e] to-[#2d1b4e] text-white flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <div className="w-10 h-10 border-4 border-primaryCyan border-t-transparent rounded-full animate-spin" />
           <p className="text-sm font-semibold">Loading Blog...</p>
@@ -71,7 +71,7 @@ export default function BlogPostPage() {
 
   if (!blog) {
     return (
-      <div className="min-h-screen bg-navyDark py-20 px-4 text-center">
+      <div className="min-h-screen bg-gradient-to-b from-navyDark via-[#1a1a4e] to-[#2d1b4e] py-20 px-4 text-center">
         <h2 className="text-2xl font-bold text-white mb-4">Blog Post Not Found</h2>
         <p className="text-slate-400 mb-6">The requested article could not be found.</p>
         <Link href="/news" className="bg-primaryCyan text-navyDark px-6 py-3 rounded-xl font-bold text-sm">
@@ -87,7 +87,7 @@ export default function BlogPostPage() {
       <div className="absolute top-[40vh] left-0 w-[500px] h-[500px] bg-primaryCyan/5 rounded-full blur-[120px] pointer-events-none" />
 
       {/* Hero Header */}
-      <div className="relative w-full h-[40vh] md:h-[50vh] bg-navyDark">
+      <div className="relative w-full h-[40vh] md:h-[50vh] bg-gradient-to-b from-navyDark via-[#1a1a4e] to-[#2d1b4e]">
         <img 
           src={blog.image_url} 
           alt={blog.title} 

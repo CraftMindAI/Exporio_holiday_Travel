@@ -38,6 +38,7 @@ export default function AdminPage() {
   const [placeImageUrl, setPlaceImageUrl] = useState('');
   const [placeSubmitting, setPlaceSubmitting] = useState(false);
   const [placeMsg, setPlaceMsg] = useState('');
+  const [placeSubmitted, setPlaceSubmitted] = useState(false);
 
   // New Blog Form State
   const [blogTitle, setBlogTitle] = useState('');
@@ -144,15 +145,27 @@ export default function AdminPage() {
     }
   }, []);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (adminEmail.trim() && adminPassword.trim()) {
-      setIsAuthenticated(true);
-      localStorage.setItem('exporio_admin_session', 'true');
-      setLoginError('');
-      fetchLeads();
-    } else {
+    setLoginError('');
+    if (!adminEmail.trim() || !adminPassword.trim()) {
       setLoginError('Please enter valid email and password.');
+      return;
+    }
+    if (supabase) {
+      const { data: isValid, error } = await supabase.rpc('verify_admin_login', {
+        admin_email: adminEmail,
+        admin_password: adminPassword,
+      });
+      if (error || !isValid) {
+        setLoginError(error?.message || 'Invalid email or password.');
+      } else {
+        setIsAuthenticated(true);
+        localStorage.setItem('exporio_admin_session', 'true');
+        fetchLeads();
+      }
+    } else {
+      setLoginError('Database connection not established.');
     }
   };
 
@@ -230,6 +243,12 @@ export default function AdminPage() {
 
     setPlaceMsg(res.message);
     setPlaceSubmitting(false);
+
+    // Check if message is a success message
+    if (res.message.includes('successfully')) {
+      setPlaceSubmitted(true);
+    }
+
     setPlaceName('');
     setPlaceImageUrl('');
   };
@@ -257,7 +276,7 @@ export default function AdminPage() {
   // If NOT authenticated, show Admin Login Portal
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-navyDark flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-b from-navyDark via-[#1a1a4e] to-[#2d1b4e] flex items-center justify-center p-4">
         <div className="bg-navyBlue text-white w-full max-w-md p-8 rounded-2xl border border-slate-700 shadow-2xl relative">
           <div className="text-center mb-6">
             <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-primaryCyan to-blue-600 flex items-center justify-center mx-auto mb-3 border border-slate-700 shadow-glow">
@@ -318,7 +337,7 @@ export default function AdminPage() {
 
   // Admin Dashboard View
   return (
-    <div className="min-h-screen bg-navyDark text-white py-10 px-4">
+    <div className="min-h-screen bg-gradient-to-b from-navyDark via-[#1a1a4e] to-[#2d1b4e] text-white py-10 px-4">
       <div className="max-w-7xl mx-auto">
         {/* Top Header */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8 pb-6 border-b border-slate-800">
@@ -582,7 +601,14 @@ export default function AdminPage() {
                       className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold disabled:opacity-50 flex items-center gap-2 whitespace-nowrap transition-colors"
                     >
                       <ImageIcon className="w-4 h-4" />
-                      {isUploadingImage ? 'Uploading...' : 'Upload'}
+                      {isUploadingImage ? (
+                        <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                        </svg>
+                      ) : (
+                        'Upload'
+                      )}
                     </button>
                   </div>
                 </div>
@@ -629,77 +655,103 @@ export default function AdminPage() {
             </h3>
             <p className="text-xs text-slate-400 mb-6">Add a new destination card to the Popular Destinations grid on the home page.</p>
 
-            {placeMsg && (
-              <div className="p-3 bg-emerald-500/20 border border-emerald-500 text-emerald-300 text-xs rounded-xl mb-6 flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4" />
-                <span>{placeMsg}</span>
-              </div>
-            )}
-
-            <form onSubmit={handleCreatePlace} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1">Destination Name *</label>
-                <input
-                  type="text"
-                  required
-                  value={placeName}
-                  onChange={(e) => setPlaceName(e.target.value)}
-                  placeholder="e.g. Manali & Solang Valley"
-                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-primaryCyan"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1">Category *</label>
-                <select
-                  value={placeCategory}
-                  onChange={(e) => setPlaceCategory(e.target.value as any)}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-primaryCyan"
+            {placeSubmitted ? (
+              <div className="p-6 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-center space-y-3">
+                <CheckCircle2 className="w-12 h-12 text-emerald-400 mx-auto" />
+                <h4 className="text-lg font-bold text-emerald-400">Place Added Successfully!</h4>
+                <p className="text-xs text-emerald-100">{placeMsg || 'The new destination has been published.'}</p>
+                <button
+                  onClick={() => {
+                    setPlaceSubmitted(false);
+                    setPlaceMsg('');
+                  }}
+                  className="mt-6 bg-primaryCyan hover:brightness-110 text-navyDark font-extrabold px-6 py-2.5 rounded-xl shadow-glow transition-all text-xs uppercase tracking-wider"
                 >
-                  <option value="domestic">Domestic (India)</option>
-                  <option value="international">International</option>
-                </select>
+                  Add Another Place
+                </button>
               </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1">Cover Image (Upload or Paste URL) *</label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="url"
-                    value={placeImageUrl}
-                    onChange={(e) => setPlaceImageUrl(e.target.value)}
-                    placeholder="Paste image URL here..."
-                    className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-primaryCyan"
-                  />
-                  <div className="relative">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handlePlaceImageUpload}
-                      disabled={isUploadingImage}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
-                      title="Upload Image"
-                    />
-                    <button
-                      type="button"
-                      disabled={isUploadingImage}
-                      className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold disabled:opacity-50 flex items-center gap-2 whitespace-nowrap transition-colors"
-                    >
-                      <ImageIcon className="w-4 h-4" />
-                      {isUploadingImage ? 'Uploading...' : 'Upload'}
-                    </button>
+            ) : (
+              <>
+                {placeMsg && (
+                  <div className="p-3 bg-emerald-500/20 border border-emerald-500 text-emerald-300 text-xs rounded-xl mb-6 flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>{placeMsg}</span>
                   </div>
-                </div>
-              </div>
+                )}
 
-              <button
-                type="submit"
-                disabled={placeSubmitting || isUploadingImage}
-                className="w-full bg-gradient-to-r from-primaryCyan to-blue-600 hover:brightness-110 text-navyDark font-extrabold py-3 rounded-xl text-xs uppercase tracking-wider shadow-glow transition-all disabled:opacity-50"
-              >
-                {placeSubmitting ? 'Adding Place...' : 'ADD DESTINATION PLACE'}
-              </button>
-            </form>
+                <form onSubmit={handleCreatePlace} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-300 mb-1">Destination Name *</label>
+                    <input
+                      type="text"
+                      required
+                      value={placeName}
+                      onChange={(e) => setPlaceName(e.target.value)}
+                      placeholder="e.g. Manali & Solang Valley"
+                      className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-primaryCyan"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-300 mb-1">Category *</label>
+                    <select
+                      value={placeCategory}
+                      onChange={(e) => setPlaceCategory(e.target.value as any)}
+                      className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-primaryCyan"
+                    >
+                      <option value="domestic">Domestic (India)</option>
+                      <option value="international">International</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-300 mb-1">Cover Image (Upload or Paste URL) *</label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="url"
+                        value={placeImageUrl}
+                        onChange={(e) => setPlaceImageUrl(e.target.value)}
+                        placeholder="Paste image URL here..."
+                        className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-primaryCyan"
+                      />
+                      <div className="relative">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handlePlaceImageUpload}
+                          disabled={isUploadingImage}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                          title="Upload Image"
+                        />
+                        <button
+                          type="button"
+                          disabled={isUploadingImage}
+                          className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold disabled:opacity-50 flex items-center gap-2 whitespace-nowrap transition-colors"
+                        >
+                          <ImageIcon className="w-4 h-4" />
+                          {isUploadingImage ? (
+                            <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                            </svg>
+                          ) : (
+                            'Upload'
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={placeSubmitting || isUploadingImage}
+                    className="w-full bg-gradient-to-r from-primaryCyan to-blue-600 hover:brightness-110 text-navyDark font-extrabold py-3 rounded-xl text-xs uppercase tracking-wider shadow-glow transition-all disabled:opacity-50"
+                  >
+                    {placeSubmitting ? 'Adding Place...' : 'ADD DESTINATION PLACE'}
+                  </button>
+                </form>
+              </>
+            )}
           </div>
         )}
 
@@ -768,7 +820,14 @@ export default function AdminPage() {
                       className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold disabled:opacity-50 flex items-center gap-2 whitespace-nowrap transition-colors"
                     >
                       <ImageIcon className="w-4 h-4" />
-                      {isUploadingImage ? 'Uploading...' : 'Upload'}
+                      {isUploadingImage ? (
+                        <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                        </svg>
+                      ) : (
+                        'Upload'
+                      )}
                     </button>
                   </div>
                 </div>

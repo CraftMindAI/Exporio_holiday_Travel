@@ -67,18 +67,18 @@ export default function InquiryModal({ tour, isOpen, onClose }: InquiryModalProp
 
   return (
     <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-300">
-      <div className="bg-white text-slate-800 w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden relative flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-300">
+      <div className="bg-navyDark/95 backdrop-blur-md text-slate-200 w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden relative flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-300 border border-slate-700/50">
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-20 w-8 h-8 rounded-full bg-white hover:bg-slate-100 text-slate-800 flex items-center justify-center transition-all shadow-md"
+          className="absolute top-4 right-4 z-20 w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-200 flex items-center justify-center transition-all shadow-md"
           title="Close"
         >
           <X className="w-5 h-5" />
         </button>
 
         {/* Top Banner Image */}
-        <div className="relative h-28 sm:h-40 overflow-hidden bg-slate-900 flex-shrink-0">
+        <div className="relative h-28 sm:h-40 overflow-hidden bg-navyDark flex-shrink-0">
           <img
             src={tour?.imageUrl || "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=1200&q=80"}
             alt="Travelers Banner"
@@ -90,11 +90,11 @@ export default function InquiryModal({ tour, isOpen, onClose }: InquiryModalProp
         <div className="overflow-y-auto custom-scrollbar p-6 sm:p-8">
           {submitted ? (
             <div className="text-center py-8 space-y-3">
-              <div className="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
+              <div className="w-14 h-14 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto">
                 <Check className="w-8 h-8" />
               </div>
-              <h4 className="text-xl font-extrabold text-navyBlue">Details Sent Successfully!</h4>
-              <p className="text-xs text-slate-600">
+              <h4 className="text-xl font-extrabold text-white">Details Sent Successfully!</h4>
+              <p className="text-xs text-slate-400">
                 Our travel representative will contact you within 10 minutes with custom quotes & itineraries.
               </p>
             </div>
@@ -108,7 +108,7 @@ export default function InquiryModal({ tour, isOpen, onClose }: InquiryModalProp
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="Name"
-                  className="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-primaryCyan"
+                  className="w-full bg-slate-800/80 border border-slate-600 rounded-lg px-4 py-3 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-primaryCyan"
                 />
                 <input
                   type="email"
@@ -116,7 +116,7 @@ export default function InquiryModal({ tour, isOpen, onClose }: InquiryModalProp
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   placeholder="Email Id"
-                  className="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-primaryCyan"
+                  className="w-full bg-slate-800/80 border border-slate-600 rounded-lg px-4 py-3 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-primaryCyan"
                 />
               </div>
 
@@ -128,7 +128,7 @@ export default function InquiryModal({ tour, isOpen, onClose }: InquiryModalProp
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   placeholder="Contact Number"
-                  className="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-primaryCyan"
+                  className="w-full bg-slate-800/80 border border-slate-600 rounded-lg px-4 py-3 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-primaryCyan"
                 />
                 <input
                   type="number"
@@ -137,7 +137,7 @@ export default function InquiryModal({ tour, isOpen, onClose }: InquiryModalProp
                   value={formData.guestsCount || ''}
                   onChange={(e) => setFormData({ ...formData, guestsCount: parseInt(e.target.value) || 1 })}
                   placeholder="No. of People"
-                  className="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-primaryCyan"
+                  className="w-full bg-slate-800/80 border border-slate-600 rounded-lg px-4 py-3 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-primaryCyan"
                 />
               </div>
 
@@ -147,7 +147,7 @@ export default function InquiryModal({ tour, isOpen, onClose }: InquiryModalProp
                   required
                   value={nights}
                   onChange={(e) => setNights(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-3 text-sm text-slate-800 focus:outline-none focus:border-primaryCyan"
+                  className="w-full bg-slate-800/80 border border-slate-600 rounded-lg px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-primaryCyan"
                 >
                   <option value="">Select no. of nights</option>
                   <option value="2 Nights / 3 Days">2 Nights / 3 Days</option>
@@ -163,10 +163,10 @@ export default function InquiryModal({ tour, isOpen, onClose }: InquiryModalProp
                     required
                     value={formData.travelDate}
                     onChange={(e) => setFormData({ ...formData, travelDate: e.target.value })}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-3 text-sm text-slate-800 focus:outline-none focus:border-primaryCyan"
+                    className="w-full bg-slate-800/80 border border-slate-600 rounded-lg px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-primaryCyan"
                   />
                   {!formData.travelDate && (
-                    <span className="absolute left-4 top-3 text-sm text-slate-400 pointer-events-none bg-slate-50 px-1">
+                    <span className="absolute left-4 top-3 text-sm text-slate-500 pointer-events-none bg-slate-800 px-1">
                       Date of Arrival
                     </span>
                   )}
@@ -179,7 +179,7 @@ export default function InquiryModal({ tour, isOpen, onClose }: InquiryModalProp
                   required
                   value={destination}
                   onChange={(e) => setDestination(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-3 text-sm text-slate-800 focus:outline-none focus:border-primaryCyan"
+                  className="w-full bg-slate-800/80 border border-slate-600 rounded-lg px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-primaryCyan"
                 >
                   <option value="">Select Your Destination</option>
                   {tour && <option value={tour.title}>{tour.title}</option>}
@@ -198,7 +198,7 @@ export default function InquiryModal({ tour, isOpen, onClose }: InquiryModalProp
               </div>
 
               {/* Row 5: reCAPTCHA Widget Simulation */}
-              <div className="w-[280px] p-2 bg-white border border-slate-200 rounded flex items-center justify-between my-4 shadow-sm">
+              <div className="w-[280px] p-2 bg-slate-800/80 border border-slate-600 rounded flex items-center justify-between my-4 shadow-sm">
                 <label className="flex items-center gap-3 cursor-pointer">
                   <input
                     type="checkbox"
@@ -206,12 +206,12 @@ export default function InquiryModal({ tour, isOpen, onClose }: InquiryModalProp
                     onChange={(e) => setCaptchaChecked(e.target.checked)}
                     className="w-5 h-5 rounded-sm text-primaryCyan border-slate-400 focus:ring-primaryCyan cursor-pointer"
                   />
-                  <span className="text-xs font-medium text-slate-700">I'm not a robot</span>
+                  <span className="text-xs font-medium text-slate-300">I'm not a robot</span>
                 </label>
 
                 <div className="flex flex-col items-center">
                   <ShieldCheck className="w-5 h-5 text-primaryCyan" />
-                  <span className="text-[9px] text-slate-500 font-semibold uppercase">reCAPTCHA</span>
+                  <span className="text-[9px] text-slate-400 font-semibold uppercase">reCAPTCHA</span>
                 </div>
               </div>
 
@@ -220,9 +220,12 @@ export default function InquiryModal({ tour, isOpen, onClose }: InquiryModalProp
                 <button
                   type="submit"
                   disabled={loading}
-                  className="bg-primaryCyan hover:brightness-110 text-white px-10 py-3 rounded text-sm font-semibold transition-colors inline-block shadow-lg w-full sm:w-auto min-w-[200px]"
+                  className="bg-primaryCyan hover:brightness-110 text-white px-10 py-3 rounded-lg text-sm font-semibold transition-colors inline-flex items-center justify-center shadow-lg w-full sm:w-auto min-w-[200px]"
                 >
-                  {loading ? 'Sending...' : 'Send Me Details'}
+                  <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
                 </button>
               </div>
             </form>
