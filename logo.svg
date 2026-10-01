@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120" width="400" height="120">
+  <defs>
+    <linearGradient id="orangeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#ff4e00"/>
+      <stop offset="100%" style="stop-color:#ff6b2b"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Airplane icon -->
+  <g transform="translate(330, 25) rotate(35)">
+    <path d="M0 15 L60 0 L50 20 L55 35 L45 30 L40 45 L35 30 L15 35 L20 20 Z" fill="url(#orangeGrad)"/>
+    <path d="M60 0 L75 -5 L65 15 Z" fill="#ff4e00" opacity="0.6"/>
+  </g>
+  
+  <!-- EXPORIO text -->
+  <text x="10" y="68" font-family="Inter, system-ui, sans-serif" font-size="42" font-weight="800" fill="#ffffff" letter-spacing="6">EXPORIO</text>
+  
+  <!-- HOLIDAYS text -->
+  <text x="12" y="95" font-family="Inter, system-ui, sans-serif" font-size="18" font-weight="300" fill="#ff4e00" letter-spacing="10">HOLIDAYS</text>
+  
+  <!-- Tagline -->
+  <text x="14" y="112" font-family="Inter, system-ui, sans-serif" font-size="8" font-weight="500" fill="#94a3b8" letter-spacing="3">TRAVEL BEYOND BORDERS</text>
+  
+  <!-- Decorative line under EXPORIO -->
+  <rect x="12" y="74" width="200" height="2" fill="url(#orangeGrad)" rx="1"/>
+</svg>
