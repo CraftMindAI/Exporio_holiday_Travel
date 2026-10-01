@@ -276,8 +276,19 @@ export default function AdminPage() {
         isFeatured: true,
         isTrending: true,
       });
-    }
 
+      if (res.success) {
+        try {
+          fetch('/api/notify-subscribers', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tourTitle, slug }),
+          });
+        } catch (err) {
+          console.error('Failed to send emails', err);
+        }
+      }
+    }
 
     setTourMsg(res.message);
     setTourSubmitting(false);
