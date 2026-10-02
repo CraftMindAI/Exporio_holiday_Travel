@@ -69,18 +69,36 @@ function DestinationSection({
   onEnquire: (tour: TourPackage) => void;
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [isPaused, setIsPaused] = useState(false);
 
   const scrollLeft = () => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollBy({ left: -320, behavior: 'smooth' });
+    const el = scrollRef.current;
+    if (!el) return;
+    // Wrap to the end when already at the start
+    if (el.scrollLeft <= 0) {
+      el.scrollTo({ left: el.scrollWidth, behavior: 'smooth' });
+    } else {
+      el.scrollBy({ left: -320, behavior: 'smooth' });
     }
   };
 
   const scrollRight = () => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollBy({ left: 320, behavior: 'smooth' });
+    const el = scrollRef.current;
+    if (!el) return;
+    // Wrap back to the start when the end is reached
+    if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 5) {
+      el.scrollTo({ left: 0, behavior: 'smooth' });
+    } else {
+      el.scrollBy({ left: 320, behavior: 'smooth' });
     }
   };
+
+  // Auto-scroll every 3 seconds, paused while the user hovers or touches the slider
+  useEffect(() => {
+    if (isPaused || tours.length < 2) return;
+    const intervalId = setInterval(scrollRight, 3000);
+    return () => clearInterval(intervalId);
+  }, [isPaused, tours.length]);
 
   return (
     <div className="mb-12 last:mb-0">
@@ -104,11 +122,15 @@ function DestinationSection({
       {/* Horizontal Slider for this Destination */}
       <div
         ref={scrollRef}
-        className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory"
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => setIsPaused(false)}
+        onTouchStart={() => setIsPaused(true)}
+        onTouchEnd={() => setIsPaused(false)}
+        className="flex items-stretch gap-6 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {tours.map((tour) => (
-          <div key={tour.id} className="min-w-[300px] sm:min-w-[320px] snap-start">
+          <div key={tour.id} className="min-w-[300px] sm:min-w-[320px] snap-start pt-1">
             <TourPackageCard tour={tour} onEnquire={onEnquire} />
           </div>
         ))}
@@ -123,36 +145,6 @@ export default function HomePage() {
   const [activeTab, setActiveTab] = useState<'all' | 'domestic' | 'international'>('all');
   const [selectedTourForInquiry, setSelectedTourForInquiry] = useState<TourPackage | null>(null);
   const [inquiryModalOpen, setInquiryModalOpen] = useState(false);
-
-  // Inactivity popup timer (2 minutes)
-  useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
-
-    const resetTimer = () => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => {
-        // Only show if it's not already open
-        setInquiryModalOpen((prev) => {
-          if (!prev) {
-            setSelectedTourForInquiry(null);
-            return true;
-          }
-          return prev;
-        });
-      }, 10000); // 10,000 ms = 10 seconds
-    };
-
-    resetTimer(); // Start the timer when the page loads
-
-    // Reset the timer on any user interaction
-    const events = ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart'];
-    events.forEach((event) => document.addEventListener(event, resetTimer));
-
-    return () => {
-      clearTimeout(timeoutId);
-      events.forEach((event) => document.removeEventListener(event, resetTimer));
-    };
-  }, []);
 
   useEffect(() => {
     async function loadData() {

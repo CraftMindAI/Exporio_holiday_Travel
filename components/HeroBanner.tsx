@@ -2,6 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { Search, MapPin, Calendar, DollarSign, Award, Users, ChevronRight, ChevronLeft, Plane } from 'lucide-react';
+import MultiSelect from './MultiSelect';
+
+const DURATION_OPTIONS = ['3 - 5 Days', '6 - 8 Days', '9+ Days'];
+const BUDGET_OPTIONS = ['Under ₹15,000', '₹15,000 - ₹25,000', '₹25,000+'];
+
+// Match the hero's text input styling
+const HERO_FIELD_CLASS = 'bg-slate-900 border-slate-700 rounded-xl min-h-[44px] sm:min-h-[44px] pl-3 sm:pl-3 py-1 text-white';
 
 const HERO_SLIDES = [
   {
@@ -24,8 +31,8 @@ const HERO_SLIDES = [
 export default function HeroBanner({ onSearch }: { onSearch?: (destination: string) => void }) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [destination, setDestination] = useState('');
-  const [duration, setDuration] = useState('all');
-  const [budget, setBudget] = useState('all');
+  const [durations, setDurations] = useState<string[]>([]);
+  const [budgets, setBudgets] = useState<string[]>([]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -109,7 +116,7 @@ export default function HeroBanner({ onSearch }: { onSearch?: (destination: stri
       <div className="relative z-20 max-w-5xl mx-auto px-3 sm:px-4 pb-6 sm:pb-8 w-full">
         <form
           onSubmit={handleSearchSubmit}
-          className="bg-navyBlue/90 backdrop-blur-md border border-slate-700/80 p-3 sm:p-4 md:p-5 rounded-2xl shadow-2xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 items-center"
+          className="bg-navyBlue/90 backdrop-blur-md border border-slate-700/80 p-3 sm:p-4 md:p-5 rounded-2xl shadow-2xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 items-end"
         >
           {/* Destination */}
           <div className="relative">
@@ -121,7 +128,7 @@ export default function HeroBanner({ onSearch }: { onSearch?: (destination: stri
               value={destination}
               onChange={(e) => setDestination(e.target.value)}
               placeholder="e.g. Sikkim, Kashmir, Bali"
-              className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 sm:py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-primaryCyan"
+              className="w-full h-11 bg-slate-900 border border-slate-700 rounded-xl px-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-primaryCyan"
             />
           </div>
 
@@ -130,16 +137,14 @@ export default function HeroBanner({ onSearch }: { onSearch?: (destination: stri
             <label className="block text-[10px] sm:text-[11px] font-bold uppercase text-slate-400 mb-1 flex items-center gap-1">
               <Calendar className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-primaryCyan" /> Duration
             </label>
-            <select
-              value={duration}
-              onChange={(e) => setDuration(e.target.value)}
-              className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 sm:py-2.5 text-sm text-white focus:outline-none focus:border-primaryCyan"
-            >
-              <option value="all">Any Duration</option>
-              <option value="3-5">3 - 5 Days</option>
-              <option value="6-8">6 - 8 Days</option>
-              <option value="9+">9+ Days</option>
-            </select>
+            <MultiSelect
+              options={DURATION_OPTIONS}
+              value={durations}
+              onChange={setDurations}
+              placeholder="Any Duration"
+              className={HERO_FIELD_CLASS}
+              dropUp
+            />
           </div>
 
           {/* Budget */}
@@ -147,23 +152,21 @@ export default function HeroBanner({ onSearch }: { onSearch?: (destination: stri
             <label className="block text-[10px] sm:text-[11px] font-bold uppercase text-slate-400 mb-1 flex items-center gap-1">
               <DollarSign className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-primaryCyan" /> Budget / Person
             </label>
-            <select
-              value={budget}
-              onChange={(e) => setBudget(e.target.value)}
-              className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 sm:py-2.5 text-sm text-white focus:outline-none focus:border-primaryCyan"
-            >
-              <option value="all">Any Budget</option>
-              <option value="under15k">Under ₹15,000</option>
-              <option value="15k-25k">₹15,000 - ₹25,000</option>
-              <option value="25k+">₹25,000+</option>
-            </select>
+            <MultiSelect
+              options={BUDGET_OPTIONS}
+              value={budgets}
+              onChange={setBudgets}
+              placeholder="Any Budget"
+              className={HERO_FIELD_CLASS}
+              dropUp
+            />
           </div>
 
           {/* Submit Button */}
-          <div className="sm:col-span-2 lg:col-span-1 pt-1">
+          <div className="sm:col-span-2 lg:col-span-1">
             <button
               type="submit"
-              className="w-full h-[40px] sm:h-[42px] bg-gradient-to-r from-primaryCyan to-blue-600 hover:brightness-110 text-navyDark font-extrabold rounded-xl text-sm flex items-center justify-center gap-2 shadow-glow transition-all touch-manipulation"
+              className="w-full h-11 bg-gradient-to-r from-primaryCyan to-blue-600 hover:brightness-110 text-navyDark font-extrabold rounded-xl text-sm flex items-center justify-center gap-2 shadow-glow transition-all touch-manipulation"
             >
               <Search className="w-4 h-4" />
               <span>SEARCH TOURS</span>

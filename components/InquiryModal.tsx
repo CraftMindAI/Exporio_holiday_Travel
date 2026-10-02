@@ -4,6 +4,23 @@ import React, { useState, useEffect } from 'react';
 import { X, Check, ShieldCheck } from 'lucide-react';
 import { TourPackage, Inquiry } from '@/types';
 import { submitInquiry } from '@/lib/supabase';
+import MultiSelect from './MultiSelect';
+
+const NIGHT_OPTIONS = ['2 Nights / 3 Days', '3 Nights / 4 Days', '4 Nights / 5 Days', '5 Nights / 6 Days', '6+ Nights'];
+
+const DESTINATION_OPTIONS = [
+  'Sikkim & Gangtok',
+  'Kashmir',
+  'Darjeeling',
+  'Kerala',
+  'Andaman Islands',
+  'Bhutan',
+  'Bali',
+  'Shimla & Manali',
+  'Leh Ladakh',
+  'Goa',
+  'Uttarakhand',
+];
 
 interface InquiryModalProps {
   tour?: TourPackage | null;
@@ -21,15 +38,16 @@ export default function InquiryModal({ tour, isOpen, onClose }: InquiryModalProp
     message: '',
   });
 
-  const [nights, setNights] = useState('');
-  const [destination, setDestination] = useState(tour?.title || '');
+  const [nights, setNights] = useState<string[]>([]);
+  const [destinations, setDestinations] = useState<string[]>(tour?.title ? [tour.title] : []);
+  const [showErrors, setShowErrors] = useState(false);
   const [captchaChecked, setCaptchaChecked] = useState(false);
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
     if (tour?.title) {
-      setDestination(tour.title);
+      setDestinations((prev) => (prev.includes(tour.title) ? prev : [tour.title, ...prev]));
     }
   }, [tour]);
 
@@ -37,6 +55,10 @@ export default function InquiryModal({ tour, isOpen, onClose }: InquiryModalProp
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (nights.length === 0 || destinations.length === 0) {
+      setShowErrors(true);
+      return;
+    }
     if (!captchaChecked) {
       alert('Please confirm you are not a robot by clicking the reCAPTCHA box.');
       return;
@@ -46,8 +68,8 @@ export default function InquiryModal({ tour, isOpen, onClose }: InquiryModalProp
     const payload: Inquiry = {
       ...formData,
       tourId: tour?.id,
-      tourTitle: destination || 'General Travel Consultation',
-      message: nights ? `${nights} nights. ${formData.message}` : formData.message
+      tourTitle: destinations.join(', ') || 'General Travel Consultation',
+      message: nights.length ? `Duration: ${nights.join(', ')}. ${formData.message}` : formData.message
     };
 
     try {
@@ -57,6 +79,7 @@ export default function InquiryModal({ tour, isOpen, onClose }: InquiryModalProp
         onClose();
         setSubmitted(false);
         setCaptchaChecked(false);
+        setShowErrors(false);
       }, 3000);
     } catch (err: any) {
       alert('Failed to submit inquiry. Please try again.');
@@ -66,7 +89,7 @@ export default function InquiryModal({ tour, isOpen, onClose }: InquiryModalProp
   };
 
   return (
-    <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 sm:p-6 animate-in fade-in duration-300">
+    <div data-inquiry-modal className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 sm:p-6 animate-in fade-in duration-300">
       <div className="bg-navyDark/95 backdrop-blur-md text-slate-200 w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden relative flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-300 border border-slate-700/50">
         {/* Close Button */}
         <button
@@ -150,19 +173,18 @@ export default function InquiryModal({ tour, isOpen, onClose }: InquiryModalProp
 
               {/* Row 3: Select no. of nights & Date of Arrival */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                <select
-                  required
-                  value={nights}
-                  onChange={(e) => setNights(e.target.value)}
-                  className="w-full bg-slate-800/80 border border-slate-600 rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 text-sm text-slate-200 focus:outline-none focus:border-primaryCyan"
-                >
-                  <option value="">Select no. of nights</option>
-                  <option value="2 Nights / 3 Days">2 Nights / 3 Days</option>
-                  <option value="3 Nights / 4 Days">3 Nights / 4 Days</option>
-                  <option value="4 Nights / 5 Days">4 Nights / 5 Days</option>
-                  <option value="5 Nights / 6 Days">5 Nights / 6 Days</option>
-                  <option value="6+ Nights">6+ Nights</option>
-                </select>
+                <div>
+                  <MultiSelect
+                    options={NIGHT_OPTIONS}
+                    value={nights}
+                    onChange={setNights}
+                    placeholder="Select no. of nights"
+                    invalid={showErrors && nights.length === 0}
+                  />
+                  {showErrors && nights.length === 0 && (
+                    <p className="text-[11px] text-red-400 mt-1">Please select at least one option.</p>
+                  )}
+                </div>
 
                 <div className="relative">
                   <input
@@ -182,26 +204,16 @@ export default function InquiryModal({ tour, isOpen, onClose }: InquiryModalProp
 
               {/* Row 4: Select Your Destination */}
               <div>
-                <select
-                  required
-                  value={destination}
-                  onChange={(e) => setDestination(e.target.value)}
-                  className="w-full bg-slate-800/80 border border-slate-600 rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 text-sm text-slate-200 focus:outline-none focus:border-primaryCyan"
-                >
-                  <option value="">Select Your Destination</option>
-                  {tour && <option value={tour.title}>{tour.title}</option>}
-                  <option value="Sikkim & Gangtok">Sikkim & Gangtok</option>
-                  <option value="Kashmir">Kashmir</option>
-                  <option value="Darjeeling">Darjeeling</option>
-                  <option value="Kerala">Kerala</option>
-                  <option value="Andaman Islands">Andaman Islands</option>
-                  <option value="Bhutan">Bhutan</option>
-                  <option value="Bali">Bali</option>
-                  <option value="Shimla & Manali">Shimla & Manali</option>
-                  <option value="Leh Ladakh">Leh Ladakh</option>
-                  <option value="Goa">Goa</option>
-                  <option value="Uttarakhand">Uttarakhand</option>
-                </select>
+                <MultiSelect
+                  options={tour?.title && !DESTINATION_OPTIONS.includes(tour.title) ? [tour.title, ...DESTINATION_OPTIONS] : DESTINATION_OPTIONS}
+                  value={destinations}
+                  onChange={setDestinations}
+                  placeholder="Select Your Destination"
+                  invalid={showErrors && destinations.length === 0}
+                />
+                {showErrors && destinations.length === 0 && (
+                  <p className="text-[11px] text-red-400 mt-1">Please select at least one destination.</p>
+                )}
               </div>
 
               {/* Row 5: reCAPTCHA Widget Simulation */}
