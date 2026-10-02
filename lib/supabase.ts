@@ -1,3 +1,4 @@
+import { markInquirySubmitted } from './inquiryStatus';
 import { createClient } from '@supabase/supabase-js';
 import { TourPackage, Inquiry, Destination, Blog } from '@/types';
 
@@ -225,6 +226,7 @@ export async function submitInquiry(inquiry: Inquiry): Promise<{ success: boolea
       ]);
 
       if (error) throw error;
+      markInquirySubmitted();
       return { success: true, message: 'Your booking inquiry has been sent! We will call you shortly.' };
     } catch (err: any) {
       console.warn('Fallback to local inquiry recording');
@@ -232,6 +234,7 @@ export async function submitInquiry(inquiry: Inquiry): Promise<{ success: boolea
   }
 
   inquiriesList.unshift({ ...inquiry, id: Date.now().toString(), status: 'pending', createdAt: new Date().toISOString() });
+  markInquirySubmitted();
   return { success: true, message: 'Your booking inquiry has been recorded successfully!' };
 }
 

@@ -16,8 +16,9 @@ export const siteConfig = {
   headOfficeAddress: 'Maduari, TamilNadu - 624220, India',
 
   socialLinks: {
-    facebook: 'https://www.facebook.com/exporioholidays',
-    instagram: 'https://www.instagram.com/exporioholidays',
+    // TODO: replace with the page's direct URL (facebook.com/<page-username>)
+    facebook: 'https://www.facebook.com/search/top?q=Exporio%20Holidays',
+    instagram: 'https://www.instagram.com/exporioholidays_._/',
     youtube: 'https://www.youtube.com/@exporioholidays',
   }
 };

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Mail, MapPin, Phone, Facebook, Instagram, Youtube, LogIn, ChevronDown, Menu, X, Plane, User } from 'lucide-react';
+import { Mail, MapPin, PhoneCall, Facebook, Instagram, Youtube, LogIn, ChevronDown, Menu, X, User } from 'lucide-react';
 import { siteConfig } from '@/config/siteConfig';
 import { supabase } from '@/lib/supabase';
 
@@ -142,17 +142,11 @@ export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           {/* Brand Logo */}
           <Link href="/" className="flex items-center">
-            <div className="flex flex-col">
-              <div className="flex items-center">
-                <span className="text-2xl sm:text-3xl font-black tracking-widest text-white uppercase">
-                  Exporio
-                </span>
-                <Plane className="w-5 h-5 text-primaryCyan ml-1 transform rotate-45" strokeWidth={2.5} />
-              </div>
-              <span className="text-[10px] sm:text-xs font-bold tracking-[0.25em] text-slate-300 uppercase mt-0.5">
-                Holidays
-              </span>
-            </div>
+            <img
+              src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/exporio-logo-white.png`}
+              alt="Exporio Holidays"
+              className="h-11 sm:h-14 w-auto object-contain"
+            />
           </Link>
 
           {/* Desktop Nav Links */}
@@ -216,9 +210,14 @@ export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }
 
           {/* Right Phone Call CTA */}
           <div className="hidden md:flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-primaryCyan/20 text-primaryCyan flex items-center justify-center shadow-sm border border-primaryCyan/30">
-              <Phone className="w-5 h-5 animate-pulse" />
-            </div>
+            <a
+              href={siteConfig.phoneCallUrl}
+              aria-label={`Call ${siteConfig.phoneNumber}`}
+              className="relative w-11 h-11 rounded-full bg-gradient-to-br from-primaryCyan to-accentOrange text-white flex items-center justify-center shadow-glow hover:scale-105 transition-transform"
+            >
+              <span className="absolute inset-0 rounded-full bg-primaryCyan/40 animate-ping" />
+              <PhoneCall className="relative w-5 h-5" strokeWidth={2.25} />
+            </a>
             <div>
               <a href={siteConfig.phoneCallUrl} className="font-extrabold text-base text-white hover:text-primaryCyan transition-colors block leading-tight">
                 {siteConfig.phoneNumber}
@@ -306,7 +305,7 @@ export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }
             </Link>
 
             <div className="pt-3 mt-2 border-t border-slate-700 flex items-center gap-3 px-3">
-              <Phone className="w-5 h-5 text-primaryCyan" />
+              <PhoneCall className="w-5 h-5 text-primaryCyan" />
               <a href={siteConfig.phoneCallUrl} className="font-bold text-sm text-white">
                 {siteConfig.phoneNumber} (24/7 Support)
               </a>

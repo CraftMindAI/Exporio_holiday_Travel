@@ -28,14 +28,12 @@ export default function Footer() {
           {/* Col 1: About */}
           <div className="space-y-4">
             <Link href="/" className="flex items-center">
-              <div className="relative group">
-                <div className="absolute -inset-1 bg-gradient-to-r from-primaryCyan via-[#ff6b2b] to-[#ff2a00] rounded-xl blur-sm opacity-50 group-hover:opacity-90 transition-opacity duration-300" />
-                <img
-                  src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/exporio-logo.jpeg`}
-                  alt="Exporio Holidays"
-                  className="relative h-12 w-auto rounded-lg object-cover shadow-2xl"
-                />
-              </div>
+              <img
+                src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/exporio-logo-white.png`}
+                alt="Exporio Holidays"
+                className="h-14 w-auto object-contain"
+              />
+
             </Link>
 
             <p className="text-xs text-slate-400 leading-relaxed">
