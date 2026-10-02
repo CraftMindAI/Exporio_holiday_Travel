@@ -10,10 +10,6 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "images.unsplash.com" },
     ],
   },
-  basePath: "/Exporio_holiday_Travel",
-  env: {
-    NEXT_PUBLIC_BASE_PATH: "/Exporio_holiday_Travel",
-  },
 };
 
 export default nextConfig;
