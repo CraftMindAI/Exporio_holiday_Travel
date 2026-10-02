@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Mail, Phone, MapPin, Send, CheckCircle2, Facebook, Instagram, Youtube, Plane } from 'lucide-react';
-import { subscribeNewsletter } from '@/lib/supabase';
+import { requestSubscription } from '@/lib/supabase';
 import { siteConfig } from '@/config/siteConfig';
 
 export default function Footer() {
@@ -15,10 +15,10 @@ export default function Footer() {
     e.preventDefault();
     if (!email) return;
     setSubmitting(true);
-    const res = await subscribeNewsletter(email);
+    const res = await requestSubscription(email);
     setSubStatus(res);
     setSubmitting(false);
-    setEmail('');
+    if (res.success) setEmail('');
   };
 
   return (
@@ -173,6 +173,9 @@ export default function Footer() {
                     )}
                   </button>
                 </div>
+                {subStatus && !subStatus.success && (
+                  <p className="text-[11px] text-red-400">{subStatus.message}</p>
+                )}
               </form>
             )}
           </div>

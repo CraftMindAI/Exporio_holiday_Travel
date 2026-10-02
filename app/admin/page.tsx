@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { supabase, getAllInquiries, createTour, getTours, updateTour, deleteTour, createDestination, getDestinations, updateDestination, deleteDestination, deleteInquiry, createBlog, getBlogs, updateBlog, deleteBlog } from '@/lib/supabase';
+import { supabase, getAllInquiries, createTour, getTours, updateTour, deleteTour, createDestination, getDestinations, updateDestination, deleteDestination, deleteInquiry, createBlog, getBlogs, updateBlog, deleteBlog, notifySubscribers } from '@/lib/supabase';
 import { Inquiry, TourPackage, Destination, Blog } from '@/types';
 import { ShieldAlert, RefreshCw, Phone, Mail, Calendar, User, CheckCircle2, Clock, ArrowLeft, PlusCircle, Trash2, LogOut, MapPin, DollarSign, Sparkles, Image as ImageIcon } from 'lucide-react';
 
@@ -278,15 +278,13 @@ export default function AdminPage() {
       });
 
       if (res.success) {
-        try {
-          fetch('/api/notify-subscribers', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ tourTitle, slug }),
-          });
-        } catch (err) {
-          console.error('Failed to send emails', err);
-        }
+        const notifyRes = await notifySubscribers(slug);
+        res = {
+          ...res,
+          message: notifyRes.success
+            ? `${res.message} ${notifyRes.message}`
+            : `${res.message} (Subscriber email failed: ${notifyRes.message})`,
+        };
       }
     }
 

@@ -12,7 +12,6 @@ export const supabase = (supabaseUrl && supabaseAnonKey && !supabaseUrl.includes
 
 // Dynamic in-memory stores for offline fallback
 let inquiriesList: Inquiry[] = [];
-let subscribersList: string[] = [];
 
 /**
  * Fetch all tour packages
@@ -311,23 +310,39 @@ export async function deleteInquiry(id: string): Promise<boolean> {
 }
 
 /**
- * Subscribe email to newsletter
+ * Call a Supabase Edge Function (supabase/functions/<name>) and normalize its result
  */
-export async function subscribeNewsletter(email: string): Promise<{ success: boolean; message: string }> {
-  if (supabase) {
-    try {
-      const { error } = await supabase.from('subscribers').insert([{ email }]);
-      if (error) throw error;
-      return { success: true, message: 'Thank you for subscribing to Exporio Holidays newsletter!' };
-    } catch (err) {
-      console.warn('Fallback subscriber save');
-    }
-  }
+async function invokeFunction(name: string, body: Record<string, unknown>): Promise<{ success: boolean; message: string }> {
+  if (!supabase) return { success: false, message: 'Supabase not configured' };
 
-  if (!subscribersList.includes(email)) {
-    subscribersList.push(email);
+  const { data, error } = await supabase.functions.invoke(name, { body });
+  if (error) {
+    // Non-2xx responses carry our { error } JSON in the raw response
+    const details = await (error as any).context?.json?.().catch(() => null);
+    return { success: false, message: details?.error || 'Something went wrong. Please try again.' };
   }
-  return { success: true, message: 'Thank you for subscribing to Exporio Holidays newsletter!' };
+  return { success: true, message: data?.message || '' };
+}
+
+/**
+ * Subscribe step 1: email the visitor a link to the subscription form
+ */
+export async function requestSubscription(email: string) {
+  return invokeFunction('subscribe-invite', { email });
+}
+
+/**
+ * Subscribe step 2: save the subscription form details
+ */
+export async function completeSubscription(subscriber: { name: string; email: string; phone: string; location: string }) {
+  return invokeFunction('subscribe-complete', subscriber);
+}
+
+/**
+ * Admin: email all subscribers about a newly created tour
+ */
+export async function notifySubscribers(slug: string) {
+  return invokeFunction('notify-subscribers', { slug });
 }
 
 /**
