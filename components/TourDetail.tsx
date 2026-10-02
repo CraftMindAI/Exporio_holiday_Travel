@@ -1,40 +1,41 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { getTourBySlug } from '@/lib/supabase';
+import { getTourBySlug } from '@/lib/api';
 import { TourPackage } from '@/types';
 import InquiryModal from '@/components/InquiryModal';
-import { Star, Clock, MapPin, CheckCircle2, XCircle, Hotel, Utensils, Car, Compass, Calendar, ChevronDown, Phone, Send, ArrowLeft } from 'lucide-react';
-import { submitInquiry } from '@/lib/supabase';
+import { Star, Clock, MapPin, CheckCircle2, XCircle, Hotel, Utensils, Car, Compass, Calendar, ChevronDown, Phone, Send, ArrowLeft, BedDouble, Navigation } from 'lucide-react';
+import { TOUR_FACILITIES } from '@/config/tourFacilities';
+import { FACILITY_ICONS } from '@/components/tourFacilityIcons';
+import { submitInquiry } from '@/lib/api';
+import { toast } from '@/lib/toast';
+import { markInquirySubmitted } from '@/lib/inquiryStatus';
 
-export default function TourDetailPage() {
-  const params = useParams();
-  const slug = params?.slug as string;
-
-  const [tour, setTour] = useState<TourPackage | null>(null);
-  const [loading, setLoading] = useState(true);
+export default function TourDetail({ slug, initialTour }: { slug: string; initialTour: TourPackage | null }) {
+  // initialTour is rendered into the static HTML at build time (for SEO); refresh it in the browser
+  const [tour, setTour] = useState<TourPackage | null>(initialTour);
+  const [loading, setLoading] = useState(!initialTour);
   const [inquiryModalOpen, setInquiryModalOpen] = useState(false);
-  const [activeDay, setActiveDay] = useState<number | null>(1);
+  const [openDays, setOpenDays] = useState<number[]>([1]);
+  const toggleDay = (day: number) => setOpenDays((d) => (d.includes(day) ? d.filter((x) => x !== day) : [...d, day]));
 
   // Quick Inline Lead Form state
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [travelDate, setTravelDate] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [formMsg, setFormMsg] = useState('');
 
   useEffect(() => {
     async function loadTour() {
       if (slug) {
         const data = await getTourBySlug(slug);
-        setTour(data);
+        if (data || !initialTour) setTour(data);
       }
       setLoading(false);
     }
     loadTour();
-  }, [slug]);
+  }, [slug, initialTour]);
 
   if (loading) {
     return (
@@ -71,10 +72,14 @@ export default function TourDetailPage() {
       travelDate,
       guestsCount: 2,
     });
-    setFormMsg(res.message);
+    toast.result(res);
     setSubmitting(false);
-    setName('');
-    setPhone('');
+    if (res.success) {
+      markInquirySubmitted();
+      setName('');
+      setPhone('');
+      setTravelDate('');
+    }
   };
 
   return (
@@ -151,6 +156,41 @@ export default function TourDetailPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
             {/* Left Column: Details, Highlights, Itinerary */}
             <div className="lg:col-span-2 space-y-6 sm:space-y-8">
+              {/* Description */}
+              {tour.description && (
+                <div className="bg-navyDark/60 backdrop-blur-md p-4 sm:p-6 rounded-2xl border border-slate-700/50 shadow-sm">
+                  <h2 className="text-lg sm:text-xl font-bold text-white mb-3">About this Package</h2>
+                  <div className="space-y-3 text-xs sm:text-sm text-slate-300 leading-relaxed">
+                    {tour.description
+                      .split('\n')
+                      .filter((p) => p.trim())
+                      .map((p, i) => (
+                        <p key={i}>{p}</p>
+                      ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Tour Includes (facilities) */}
+              {tour.facilities && tour.facilities.length > 0 && (
+                <div className="bg-navyDark/60 backdrop-blur-md p-4 sm:p-6 rounded-2xl border border-slate-700/50 shadow-sm">
+                  <h2 className="text-lg sm:text-xl font-bold text-white mb-4">Tour Includes</h2>
+                  <ul className="flex flex-wrap gap-4 sm:gap-6">
+                    {TOUR_FACILITIES.filter((f) => tour.facilities!.includes(f.key)).map((f) => {
+                      const Icon = FACILITY_ICONS[f.key];
+                      return (
+                        <li key={f.key} className="flex flex-col items-center gap-2 w-20 text-center">
+                          <span className="w-12 h-12 rounded-full bg-primaryCyan/15 text-primaryCyan flex items-center justify-center">
+                            <Icon className="w-5 h-5" />
+                          </span>
+                          <span className="text-[11px] sm:text-xs font-semibold text-slate-200">{f.label}</span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              )}
+
               {/* Highlights */}
               <div className="bg-navyDark/60 backdrop-blur-md p-4 sm:p-6 rounded-2xl border border-slate-700/50 shadow-sm">
                 <h3 className="text-lg sm:text-xl font-bold text-white mb-3 sm:mb-4">Tour Highlights</h3>
@@ -164,16 +204,19 @@ export default function TourDetailPage() {
                 </ul>
               </div>
 
-              {/* Inclusions */}
+              {/* Inclusions (generic row for tours without facilities, plus any listed inclusions) */}
+              {(!tour.facilities?.length || (tour.inclusions && tour.inclusions.length > 0)) && (
               <div className="bg-navyDark/60 backdrop-blur-md p-4 sm:p-6 rounded-2xl border border-slate-700/50 shadow-sm">
                 <h3 className="text-lg sm:text-xl font-bold text-white mb-3 sm:mb-4">What's Included</h3>
+                {!tour.facilities?.length && (
                 <div className="flex flex-wrap items-center gap-3 sm:gap-6 mb-3 sm:mb-4 text-[10px] sm:text-xs font-bold text-slate-300 pb-3 sm:pb-4 border-b border-slate-700/50">
                   <span className="flex items-center gap-1.5"><Hotel className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primaryCyan" /> Accommodation</span>
                   <span className="flex items-center gap-1.5"><Utensils className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primaryCyan" /> Daily Breakfast & Dinner</span>
                   <span className="flex items-center gap-1.5"><Car className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primaryCyan" /> Private AC Vehicle</span>
                   <span className="flex items-center gap-1.5"><Compass className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primaryCyan" /> Guided Sightseeing</span>
                 </div>
-                {tour.inclusions && (
+                )}
+                {tour.inclusions && tour.inclusions.length > 0 && (
                   <ul className="space-y-1.5 sm:space-y-2">
                     {tour.inclusions.map((inc, idx) => (
                       <li key={idx} className="flex items-center gap-2 text-[11px] sm:text-xs text-slate-400">
@@ -183,32 +226,80 @@ export default function TourDetailPage() {
                   </ul>
                 )}
               </div>
+              )}
 
               {/* Day by Day Itinerary */}
               {tour.itinerary && tour.itinerary.length > 0 && (
                 <div className="bg-navyDark/60 backdrop-blur-md p-4 sm:p-6 rounded-2xl border border-slate-700/50 shadow-sm">
-                  <h3 className="text-lg sm:text-xl font-bold text-white mb-4 sm:mb-6">Day Wise Itinerary</h3>
-                  <div className="space-y-3 sm:space-y-4">
-                    {tour.itinerary.map((item) => (
-                      <div key={item.day} className="border border-slate-700/50 rounded-xl overflow-hidden">
-                        <button
-                          onClick={() => setActiveDay(activeDay === item.day ? null : item.day)}
-                          className="w-full bg-slate-900/60 px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between text-left hover:bg-slate-800 transition-colors touch-manipulation"
-                        >
-                          <span className="font-bold text-xs sm:text-sm text-white">
-                            Day {item.day}: {item.title}
-                          </span>
-                          <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${activeDay === item.day ? 'rotate-180' : ''}`} />
-                        </button>
-
-                        {activeDay === item.day && (
-                          <div className="p-3 sm:p-4 bg-navyDark text-[11px] sm:text-xs text-slate-300 leading-relaxed border-t border-slate-700/50">
-                            {item.description}
-                          </div>
-                        )}
-                      </div>
-                    ))}
+                  <div className="flex items-center justify-between gap-3 mb-4 sm:mb-6">
+                    <h2 className="text-lg sm:text-xl font-bold text-white">
+                      Itinerary <span className="text-xs font-normal text-slate-400 italic">(Day Wise)</span>
+                    </h2>
+                    <button
+                      type="button"
+                      onClick={() => setOpenDays(openDays.length === tour.itinerary!.length ? [] : tour.itinerary!.map((d) => d.day))}
+                      hidden={!tour.itinerary.some((d) => d.description || d.stay || d.places?.length || d.meals?.length)}
+                      className="text-xs font-bold text-primaryCyan hover:underline"
+                    >
+                      {openDays.length === tour.itinerary.length ? 'Collapse all' : 'View all days'}
+                    </button>
                   </div>
+                  <ol className="relative border-l border-dashed border-slate-600 ml-2 space-y-3 sm:space-y-4">
+                    {tour.itinerary.map((item) => {
+                      const hasDetails = !!(item.description || item.stay || item.places?.length || item.meals?.length);
+                      const open = hasDetails && openDays.includes(item.day);
+                      return (
+                        <li key={item.day} className="pl-5 relative">
+                          <Navigation className="w-4 h-4 text-primaryCyan absolute -left-2 top-3 bg-navyDark rotate-45" aria-hidden="true" />
+                          <div className="border border-slate-700/50 rounded-xl overflow-hidden">
+                            <button
+                              type="button"
+                              onClick={() => hasDetails && toggleDay(item.day)}
+                              aria-expanded={hasDetails ? open : undefined}
+                              disabled={!hasDetails}
+                              className="w-full bg-slate-900/60 px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between text-left enabled:hover:bg-slate-800 disabled:cursor-default transition-colors touch-manipulation"
+                            >
+                              <span>
+                                <span className="block font-bold text-xs sm:text-sm text-white">Day {item.day}</span>
+                                {item.title && <span className="block text-[11px] sm:text-xs text-slate-400 mt-0.5">{item.title}</span>}
+                              </span>
+                              {hasDetails && <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform flex-shrink-0 ${open ? 'rotate-180' : ''}`} />}
+                            </button>
+
+                            {open && (
+                              <div className="p-3 sm:p-4 bg-navyDark text-[11px] sm:text-xs text-slate-300 leading-relaxed border-t border-slate-700/50 space-y-3">
+                                {item.places && item.places.length > 0 && (
+                                  <div className="flex flex-wrap items-center gap-1.5">
+                                    <MapPin className="w-3.5 h-3.5 text-primaryCyan" />
+                                    {item.places.map((place) => (
+                                      <span key={place} className="bg-primaryCyan/10 text-primaryCyan border border-primaryCyan/30 rounded-full px-2.5 py-0.5 font-semibold">
+                                        {place}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
+                                {item.description && <p>{item.description}</p>}
+                                {((item.meals && item.meals.length > 0) || item.stay) && (
+                                  <div className="flex flex-wrap gap-x-5 gap-y-1.5 pt-1 text-slate-400">
+                                    {item.meals && item.meals.length > 0 && (
+                                      <span className="flex items-center gap-1.5">
+                                        <Utensils className="w-3.5 h-3.5 text-primaryCyan" /> {item.meals.join(', ')}
+                                      </span>
+                                    )}
+                                    {item.stay && (
+                                      <span className="flex items-center gap-1.5">
+                                        <BedDouble className="w-3.5 h-3.5 text-primaryCyan" /> {item.stay}
+                                      </span>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ol>
                 </div>
               )}
             </div>
@@ -219,11 +310,7 @@ export default function TourDetailPage() {
               <h3 className="text-base sm:text-lg font-bold text-white mb-1">Get Instant Free Quote</h3>
               <p className="text-[11px] sm:text-xs text-slate-400 mb-3 sm:mb-4">Speak directly with our travel expert for customized dates and discounts.</p>
 
-              {formMsg ? (
-                <div className="p-3 bg-emerald-500/20 border border-emerald-500 text-emerald-300 text-xs rounded-xl mb-4">
-                  {formMsg}
-                </div>
-              ) : (
+              {(
                 <form onSubmit={handleInlineInquiry} className="space-y-3">
                   <div>
                     <label className="block text-[11px] font-bold text-slate-300 mb-1">Your Name *</label>

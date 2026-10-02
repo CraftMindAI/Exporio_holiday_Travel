@@ -1,0 +1,221 @@
+// Prisma schema for the Hostinger MySQL database.
+// Connection string comes only from the HOSTIGER_DATABASE_URL environment variable.
+//   npx prisma generate         - regenerate the client after changing this file
+//   npx prisma migrate deploy   - apply prisma/migrations to the database
+
+generator client {
+  provider      = "prisma-client-js"
+  // native = this machine; the others cover Hostinger's Linux servers
+  binaryTargets = ["native", "rhel-openssl-3.0.x", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("HOSTIGER_DATABASE_URL")
+}
+
+enum Role {
+  client
+  admin
+}
+
+enum InquiryStatus {
+  pending
+  contacted
+  confirmed
+  cancelled
+}
+
+enum TokenType {
+  verify_email
+}
+
+/// Everyone with an account. Website signups are `client`; scripts/create-admin.mjs creates `admin`s.
+model User {
+  id              String    @id @default(uuid()) @db.Char(36)
+  name            String    @db.VarChar(150)
+  email           String    @unique @db.VarChar(150)
+  phone           String?   @db.VarChar(30)
+  role            Role      @default(client)
+  /// bcrypt hash, never plain text
+  password        String    @db.VarChar(255)
+  emailVerifiedAt DateTime? @map("email_verified_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  sessions    Session[]
+  emailTokens EmailToken[]
+
+  @@map("users")
+}
+
+/// Login sessions. The browser holds a random token in an httpOnly cookie; only its SHA-256 hash is stored.
+model Session {
+  id        String   @id @default(uuid()) @db.Char(36)
+  userId    String   @map("user_id") @db.Char(36)
+  tokenHash String   @unique @map("token_hash") @db.Char(64)
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+/// One-time tokens sent by email (signup verification). Only the SHA-256 hash is stored.
+model EmailToken {
+  id        String    @id @default(uuid()) @db.Char(36)
+  userId    String    @map("user_id") @db.Char(36)
+  type      TokenType
+  tokenHash String    @unique @map("token_hash") @db.Char(64)
+  expiresAt DateTime  @map("expires_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("email_tokens")
+}
+
+model Tour {
+  id                    String    @id @default(uuid()) @db.Char(36)
+  title                 String    @db.VarChar(255)
+  slug                  String    @unique @db.VarChar(255)
+  /// Detailed description of the package
+  description           String?   @db.Text
+  /// The place (destinations row) this tour goes to; location/category are copied from it
+  destinationId         String?   @map("destination_id") @db.Char(36)
+  location              String    @db.VarChar(255)
+  /// 'domestic' or 'international'
+  category              String    @default("domestic") @db.VarChar(50)
+  price                 Decimal   @db.Decimal(10, 2)
+  originalPrice         Decimal?  @map("original_price") @db.Decimal(10, 2)
+  durationNights        Int       @map("duration_nights")
+  durationDays          Int       @map("duration_days")
+  rating                Decimal   @default(5.0) @db.Decimal(3, 1)
+  reviewCount           Int       @default(0) @map("review_count")
+  imageUrl              String    @map("image_url") @db.Text
+  /// string[]
+  highlights            Json?
+  /// string[]
+  inclusions            Json?
+  /// string[]
+  exclusions            Json?
+  /// What the package provides: keys from config/tourFacilities.ts (tour_manager, hotel, meals, transport, sightseeing)
+  facilities            Json?
+  /// { day, title, description, places?: string[], meals?: ('Breakfast'|'Lunch'|'Dinner')[], stay?: string }[]
+  itinerary             Json?
+  isFeatured            Boolean   @default(false) @map("is_featured")
+  isTrending            Boolean   @default(false) @map("is_trending")
+  /// Set when subscribers were emailed about this tour (each tour is announced once)
+  subscribersNotifiedAt DateTime? @map("subscribers_notified_at")
+  createdAt             DateTime  @default(now()) @map("created_at")
+
+  inquiries   Inquiry[]
+  placesVisit TourPlaceVisit[]
+  destination Destination? @relation(fields: [destinationId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([destinationId])
+  @@map("tours")
+}
+
+model TourPlaceVisit {
+  id          String   @id @default(uuid()) @db.Char(36)
+  tourId      String   @map("tour_id") @db.Char(36)
+  placeName   String   @map("place_name") @db.VarChar(255)
+  description String?  @db.Text
+  dayNumber   Int?     @map("day_number")
+  imageUrl    String?  @map("image_url") @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  tour Tour @relation(fields: [tourId], references: [id], onDelete: Cascade)
+
+  @@index([tourId])
+  @@map("tour_places_visit")
+}
+
+model Destination {
+  id           String   @id @default(uuid()) @db.Char(36)
+  /// Unique (case-insensitive with the default MySQL collation): no duplicate places
+  name         String   @unique @db.VarChar(255)
+  slug         String   @unique @db.VarChar(255)
+  /// 'domestic' or 'international'
+  category     String   @db.VarChar(50)
+  /// Country name for international places (null for domestic)
+  country      String?  @db.VarChar(100)
+  imageUrl     String   @map("image_url") @db.Text
+  packageCount Int      @default(10) @map("package_count")
+  description  String?  @db.Text
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  tours Tour[]
+
+  @@map("destinations")
+}
+
+model Blog {
+  id        String   @id @default(uuid()) @db.Char(36)
+  title     String   @db.VarChar(255)
+  slug      String   @unique @db.VarChar(255)
+  imageUrl  String   @map("image_url") @db.Text
+  content   String   @db.LongText
+  author    String   @db.VarChar(150)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([createdAt])
+  @@map("blogs")
+}
+
+model Inquiry {
+  id          String        @id @default(uuid()) @db.Char(36)
+  name        String        @db.VarChar(150)
+  email       String        @default("") @db.VarChar(150)
+  phone       String        @db.VarChar(30)
+  tourId      String?       @map("tour_id") @db.Char(36)
+  tourTitle   String?       @map("tour_title") @db.VarChar(255)
+  travelDate  DateTime?     @map("travel_date") @db.Date
+  guestsCount Int           @default(2) @map("guests_count")
+  message     String?       @db.Text
+  status      InquiryStatus @default(pending)
+  createdAt   DateTime      @default(now()) @map("created_at")
+
+  tour Tour? @relation(fields: [tourId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([tourId])
+  @@map("inquiries")
+}
+
+model Contact {
+  id        String   @id @default(uuid()) @db.Char(36)
+  name      String   @db.VarChar(150)
+  email     String   @db.VarChar(150)
+  phone     String   @db.VarChar(30)
+  message   String   @db.Text
+  status    String   @default("unread") @db.VarChar(30)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("contacts")
+}
+
+model Subscriber {
+  id           String   @id @default(uuid()) @db.Char(36)
+  email        String   @unique @db.VarChar(150)
+  name         String?  @db.VarChar(150)
+  phone        String?  @db.VarChar(30)
+  location     String?  @db.VarChar(150)
+  subscribedAt DateTime @default(now()) @map("subscribed_at")
+
+  @@map("subscribers")
+}
+
+/// Site-wide settings changed from the admin dashboard (key -> JSON value). Defaults live in lib/settings.ts.
+model AppSetting {
+  key       String   @id @db.VarChar(100)
+  value     Json
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("app_settings")
+}

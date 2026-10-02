@@ -4,7 +4,8 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { CheckCircle2, Send } from 'lucide-react';
-import { completeSubscription } from '@/lib/supabase';
+import { completeSubscription } from '@/lib/api';
+import { toast } from '@/lib/toast';
 
 const inputClass =
   'w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-primaryCyan';
@@ -23,6 +24,7 @@ export default function SubscribeForm() {
     e.preventDefault();
     setLoading(true);
     const res = await completeSubscription({ name, email, phone, location });
+    toast.result(res);
     setStatus(res);
     setLoading(false);
   };
@@ -97,7 +99,6 @@ export default function SubscribeForm() {
         </div>
       </div>
 
-      {status && !status.success && <p className="text-xs text-red-400">{status.message}</p>}
 
       <button
         type="submit"

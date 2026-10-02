@@ -3,7 +3,8 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Mail, Phone, MapPin, Clock, Send, CheckCircle2, ArrowLeft } from 'lucide-react';
-import { submitContact } from '@/lib/supabase';
+import { submitContact } from '@/lib/api';
+import { toast } from '@/lib/toast';
 
 export default function ContactPage() {
   const [name, setName] = useState('');
@@ -11,7 +12,6 @@ export default function ContactPage() {
   const [phone, setPhone] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,9 +24,13 @@ export default function ContactPage() {
         phone,
         message,
       });
-      setSubmitted(true);
-    } catch (err) {
-      alert('Error sending message. Please try again.');
+      toast.success('Message received! Thank you for reaching out. We will contact you shortly.');
+      setName('');
+      setEmail('');
+      setPhone('');
+      setMessage('');
+    } catch (err: any) {
+      toast.error(err?.message || 'Error sending message. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -117,13 +121,7 @@ export default function ContactPage() {
             <h3 className="text-xl sm:text-2xl font-extrabold text-white mb-2">Send Us a Message</h3>
             <p className="text-[11px] sm:text-xs text-slate-400 mb-4 sm:mb-6">Fill out the form below and our team will get back to you within 15 minutes.</p>
 
-            {submitted ? (
-              <div className="p-6 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-center space-y-3">
-                <CheckCircle2 className="w-12 h-12 text-emerald-400 mx-auto" />
-                <h4 className="text-lg font-bold text-emerald-400">Message Received!</h4>
-                <p className="text-xs text-emerald-100">Thank you for reaching out to Exporio Holidays. We will contact you shortly.</p>
-              </div>
-            ) : (
+            {(
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>

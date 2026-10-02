@@ -1,41 +1,29 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { getTours } from '@/lib/supabase';
+import { getTours } from '@/lib/api';
 import { TourPackage } from '@/types';
 import TourPackageCard from '@/components/TourPackageCard';
 import InquiryModal from '@/components/InquiryModal';
 import { MapPin, ArrowLeft } from 'lucide-react';
+import { toursForLocation } from '@/lib/seo';
 
-export default function LocationPage() {
-  const params = useParams();
-  const slug = params?.slug as string;
-
-  const [tours, setTours] = useState<TourPackage[]>([]);
+export default function LocationTours({ slug, title, initialTours }: { slug: string; title: string; initialTours: TourPackage[] }) {
+  // initialTours is rendered into the static HTML at build time (for SEO); refresh it in the browser
+  const [tours, setTours] = useState<TourPackage[]>(initialTours);
   const [selectedTour, setSelectedTour] = useState<TourPackage | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
     async function loadData() {
       const all = await getTours();
-      if (slug) {
-        // filter by location slug
-        const filtered = all.filter(
-          (t) => t.slug.includes(slug) || slug.includes(t.slug) || t.location.toLowerCase().includes(slug.split('-')[0])
-        );
-        setTours(filtered.length > 0 ? filtered : all);
-      } else {
-        setTours(all);
-      }
+      if (all.length === 0) return;
+      const filtered = toursForLocation(all, slug);
+      setTours(filtered.length > 0 ? filtered : all);
     }
     loadData();
   }, [slug]);
-
-  const locationTitle = slug
-    ? slug.replace(/-/g, ' ').replace('tour package', '').replace('packages', '').toUpperCase()
-    : 'ALL DESTINATIONS';
 
   return (
     <div className="py-12 relative min-h-screen bg-gradient-to-br from-navyDark via-navyBlue to-primaryCyan/20 text-white overflow-hidden">
@@ -52,7 +40,7 @@ export default function LocationPage() {
             <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Explore Destination
           </div>
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white">
-            {locationTitle} TOUR PACKAGES
+            {title.toUpperCase()} TOUR PACKAGES
           </h1>
           <p className="text-slate-300 text-xs sm:text-sm mt-1 sm:mt-2">
             Browse carefully selected holiday itineraries with transparent pricing and 24/7 on-trip assistance.

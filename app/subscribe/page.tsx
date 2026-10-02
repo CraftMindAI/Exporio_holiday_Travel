@@ -3,8 +3,9 @@ import type { Metadata } from 'next';
 import SubscribeForm from '@/components/SubscribeForm';
 
 export const metadata: Metadata = {
-  title: 'Complete Your Subscription | Exporio Holidays',
+  title: 'Complete Your Subscription',
   robots: { index: false },
+  alternates: { canonical: '/subscribe/' },
 };
 
 export default function SubscribePage() {

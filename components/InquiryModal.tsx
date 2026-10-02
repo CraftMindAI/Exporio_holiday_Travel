@@ -3,7 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import { X, Check, ShieldCheck } from 'lucide-react';
 import { TourPackage, Inquiry } from '@/types';
-import { submitInquiry } from '@/lib/supabase';
+import { submitInquiry } from '@/lib/api';
+import { toast } from '@/lib/toast';
+import { markInquirySubmitted } from '@/lib/inquiryStatus';
 import MultiSelect from './MultiSelect';
 
 const NIGHT_OPTIONS = ['2 Nights / 3 Days', '3 Nights / 4 Days', '4 Nights / 5 Days', '5 Nights / 6 Days', '6+ Nights'];
@@ -26,9 +28,11 @@ interface InquiryModalProps {
   tour?: TourPackage | null;
   isOpen: boolean;
   onClose: () => void;
+  /** Optional label prefixed to the message so admins know where the enquiry came from, e.g. "Stranger Trip" */
+  context?: string;
 }
 
-export default function InquiryModal({ tour, isOpen, onClose }: InquiryModalProps) {
+export default function InquiryModal({ tour, isOpen, onClose, context }: InquiryModalProps) {
   const [formData, setFormData] = useState<Inquiry>({
     name: '',
     email: '',
@@ -43,7 +47,6 @@ export default function InquiryModal({ tour, isOpen, onClose }: InquiryModalProp
   const [showErrors, setShowErrors] = useState(false);
   const [captchaChecked, setCaptchaChecked] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
     if (tour?.title) {
@@ -60,7 +63,7 @@ export default function InquiryModal({ tour, isOpen, onClose }: InquiryModalProp
       return;
     }
     if (!captchaChecked) {
-      alert('Please confirm you are not a robot by clicking the reCAPTCHA box.');
+      toast.error("Please confirm you are not a robot by ticking the \"I'm not a robot\" box.");
       return;
     }
     setLoading(true);
@@ -69,20 +72,24 @@ export default function InquiryModal({ tour, isOpen, onClose }: InquiryModalProp
       ...formData,
       tourId: tour?.id,
       tourTitle: destinations.join(', ') || 'General Travel Consultation',
-      message: nights.length ? `Duration: ${nights.join(', ')}. ${formData.message}` : formData.message
+      message: `${context ? `[${context}] ` : ''}${nights.length ? `Duration: ${nights.join(', ')}. ${formData.message}` : formData.message}`,
     };
 
     try {
-      await submitInquiry(payload);
-      setSubmitted(true);
-      setTimeout(() => {
-        onClose();
-        setSubmitted(false);
-        setCaptchaChecked(false);
-        setShowErrors(false);
-      }, 3000);
+      const res = await submitInquiry(payload);
+      if (!res.success) {
+        toast.error(res.message || 'Failed to submit inquiry. Please try again.');
+        return;
+      }
+      markInquirySubmitted();
+      toast.success('Details sent successfully! Our travel expert will contact you shortly with quotes and itineraries.');
+      setFormData({ name: '', email: '', phone: '', travelDate: '', guestsCount: 2, message: '' });
+      setNights([]);
+      setCaptchaChecked(false);
+      setShowErrors(false);
+      onClose();
     } catch (err: any) {
-      alert('Failed to submit inquiry. Please try again.');
+      toast.error('Failed to submit inquiry. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -111,17 +118,7 @@ export default function InquiryModal({ tour, isOpen, onClose }: InquiryModalProp
 
         {/* Form Content - Scrollable */}
         <div className="overflow-y-auto custom-scrollbar p-4 sm:p-6">
-          {submitted ? (
-            <div className="text-center py-6 sm:py-8 space-y-3">
-              <div className="w-14 h-14 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto">
-                <Check className="w-8 h-8" />
-              </div>
-              <h4 className="text-xl font-extrabold text-white">Details Sent Successfully!</h4>
-              <p className="text-xs text-slate-400">
-                Our travel representative will contact you within 10 minutes with custom quotes & itineraries.
-              </p>
-            </div>
-          ) : (
+          {(
             <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
               {/* Row 1: Name & Email */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">

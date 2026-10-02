@@ -3,12 +3,12 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Mail, Phone, MapPin, Send, CheckCircle2, Facebook, Instagram, Youtube, Plane } from 'lucide-react';
-import { requestSubscription } from '@/lib/supabase';
+import { requestSubscription } from '@/lib/api';
+import { toast } from '@/lib/toast';
 import { siteConfig } from '@/config/siteConfig';
 
 export default function Footer() {
   const [email, setEmail] = useState('');
-  const [subStatus, setSubStatus] = useState<{ success?: boolean; message?: string } | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubscribe = async (e: React.FormEvent) => {
@@ -16,7 +16,7 @@ export default function Footer() {
     if (!email) return;
     setSubmitting(true);
     const res = await requestSubscription(email);
-    setSubStatus(res);
+    toast.result(res);
     setSubmitting(false);
     if (res.success) setEmail('');
   };
@@ -140,13 +140,7 @@ export default function Footer() {
               Subscribe to Exporio Holidays newsletter to receive exclusive travel deals and itineraries in your inbox.
             </p>
 
-            {subStatus?.success ? (
-              <div className="p-2.5 bg-emerald-500/20 text-emerald-400 rounded-xl text-xs flex items-center gap-1.5 border border-emerald-500/30">
-                <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
-                <span>{subStatus.message}</span>
-              </div>
-            ) : (
-              <form onSubmit={handleSubscribe} className="space-y-2">
+            <form onSubmit={handleSubscribe} className="space-y-2">
                 <div className="flex items-center bg-slate-900 border border-slate-700 rounded-xl overflow-hidden p-1">
                   <input
                     type="email"
@@ -171,11 +165,7 @@ export default function Footer() {
                     )}
                   </button>
                 </div>
-                {subStatus && !subStatus.success && (
-                  <p className="text-[11px] text-red-400">{subStatus.message}</p>
-                )}
               </form>
-            )}
           </div>
         </div>
 

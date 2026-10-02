@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { MapPin, Sparkles, Mountain, Palmtree, Castle, TreePine, Umbrella, Building2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { TourPackage } from '@/types';
-import { getTours } from '@/lib/supabase';
+import { getTours } from '@/lib/api';
 
 // Lazy loaded components
 const HeroBanner = dynamic(() => import('@/components/HeroBanner'), { ssr: false });

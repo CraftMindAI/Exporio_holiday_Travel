@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { Send, ChevronLeft, ChevronRight } from 'lucide-react';
-import { getDestinations } from '@/lib/supabase';
+import { getDestinations } from '@/lib/api';
 import { Destination } from '@/types';
 
 export default function PopularDestinations() {

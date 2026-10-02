@@ -2,65 +2,55 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Mail, MapPin, PhoneCall, Facebook, Instagram, Youtube, LogIn, ChevronDown, Menu, X, User } from 'lucide-react';
+import { Mail, MapPin, PhoneCall, Facebook, Instagram, Youtube, LogIn, ChevronDown, Menu, X, User, UserPlus } from 'lucide-react';
 import { siteConfig } from '@/config/siteConfig';
-import { supabase } from '@/lib/supabase';
+import AuthModal, { AuthView } from '@/components/AuthModal';
+import { getCurrentUser, onAuthChange, signOutUser, CurrentUser } from '@/lib/userAuth';
 
 export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [tourDropdownOpen, setTourDropdownOpen] = useState(false);
   const [placeDropdownOpen, setPlaceDropdownOpen] = useState(false);
-  const [authModal, setAuthModal] = useState<boolean>(false);
-  const [authEmail, setAuthEmail] = useState('');
-  const [authPassword, setAuthPassword] = useState('');
-  const [authMessage, setAuthMessage] = useState('');
-  const [authLoading, setAuthLoading] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [authView, setAuthView] = useState<AuthView | null>(null);
+  const [user, setUser] = useState<CurrentUser | null>(null);
+  const [authNotice, setAuthNotice] = useState('');
+  const adminPath = user?.adminPath || '/admin';
 
   React.useEffect(() => {
-    const session = localStorage.getItem('exporio_admin_session');
-    if (session === 'true') {
-      setIsAdmin(true);
+    const refreshUser = () => getCurrentUser().then(setUser);
+    refreshUser();
+
+    // Returning from the email verification link (/api/auth/verify signs the user in and redirects here)
+    const params = new URLSearchParams(window.location.search);
+    const verified = params.get('verified');
+    if (verified) {
+      if (verified === '1') {
+        setAuthView('verified');
+      } else {
+        setAuthNotice('That verification link is invalid or has expired. Sign in to get a new one.');
+        setAuthView('signin');
+      }
+      params.delete('verified');
+      const query = params.toString();
+      window.history.replaceState(null, '', `${window.location.pathname}${query ? `?${query}` : ''}${window.location.hash}`);
     }
+
+    return onAuthChange(refreshUser);
   }, []);
 
-  const handleAuthSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setAuthLoading(true);
-    setAuthMessage(''); // Clear previous messages
-    if (supabase) {
-      // Use the custom RPC function to verify against the encrypted admins table
-      const { data: isValid, error } = await supabase.rpc('verify_admin_login', {
-        admin_email: authEmail,
-        admin_password: authPassword,
-      });
-
-      if (error || !isValid) {
-        setAuthMessage(error?.message || 'Invalid email or password.');
-        setAuthLoading(false);
-      } else {
-        // CRITICAL FIX: Save the admin session so the /admin page knows we are logged in!
-        localStorage.setItem('exporio_admin_session', 'true');
-        setIsAdmin(true);
-
-        setTimeout(() => {
-          setAuthModal(false);
-          window.location.href = '/admin';
-        }, 1500);
-      }
-    } else {
-      setAuthMessage('Database connection not established.');
-      setAuthLoading(false);
-    }
+  const handleSignedIn = (signedInUser?: CurrentUser) => {
+    if (signedInUser) setUser(signedInUser);
+    setTimeout(() => {
+      setAuthView(null);
+      if (signedInUser?.isAdmin && signedInUser.adminPath) window.location.assign(signedInUser.adminPath);
+    }, 1200);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('exporio_admin_session');
-    setIsAdmin(false);
-    if (window.location.pathname === '/admin') {
+  const handleLogout = async () => {
+    await signOutUser();
+    setUser(null);
+    if (window.location.pathname.startsWith('/admin') || window.location.pathname.startsWith('/auth/')) {
       window.location.href = '/';
-    } else {
-      window.location.reload();
     }
   };
 
@@ -105,16 +95,23 @@ export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }
               </a>
             </div>
 
-            {/* Admin Dashboard or Sign In button */}
-            {isAdmin ? (
+            {/* Signed-in user (with Admin link for admins) or Sign In / Sign Up buttons */}
+            {user ? (
               <div className="flex items-center gap-2">
-                <Link
-                  href="/admin"
-                  className="flex items-center gap-1 hover:text-primaryCyan transition-colors font-medium bg-slate-800/80 px-3 py-1 rounded-md border border-slate-700"
-                >
-                  <User className="w-3.5 h-3.5 text-primaryCyan" />
-                  <span>Admin</span>
-                </Link>
+                {user.isAdmin ? (
+                  <Link
+                    href={adminPath}
+                    className="flex items-center gap-1 hover:text-primaryCyan transition-colors font-medium bg-slate-800/80 px-3 py-1 rounded-md border border-slate-700"
+                  >
+                    <User className="w-3.5 h-3.5 text-primaryCyan" />
+                    <span>Admin</span>
+                  </Link>
+                ) : (
+                  <span className="flex items-center gap-1 font-medium bg-slate-800/80 px-3 py-1 rounded-md border border-slate-700 max-w-[140px]" title={user.email}>
+                    <User className="w-3.5 h-3.5 text-primaryCyan flex-shrink-0" />
+                    <span className="truncate">Hi, {user.name.split(' ')[0]}</span>
+                  </span>
+                )}
                 <button
                   onClick={handleLogout}
                   className="flex items-center gap-1 hover:text-red-400 transition-colors font-medium bg-red-900/30 text-red-200 px-3 py-1 rounded-md border border-red-800/50"
@@ -125,13 +122,22 @@ export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }
                 </button>
               </div>
             ) : (
-              <button
-                onClick={() => setAuthModal(true)}
-                className="flex items-center gap-1 hover:text-primaryCyan transition-colors font-medium bg-slate-800/80 px-3 py-1 rounded-md border border-slate-700"
-              >
-                <LogIn className="w-3.5 h-3.5 text-primaryCyan" />
-                <span>Sign In</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setAuthView('signin')}
+                  className="flex items-center gap-1 hover:text-primaryCyan transition-colors font-medium bg-slate-800/80 px-3 py-1 rounded-md border border-slate-700"
+                >
+                  <LogIn className="w-3.5 h-3.5 text-primaryCyan" />
+                  <span>Sign In</span>
+                </button>
+                <button
+                  onClick={() => setAuthView('signup')}
+                  className="flex items-center gap-1 transition-colors font-bold bg-primaryCyan text-navyDark px-3 py-1 rounded-md hover:brightness-110"
+                >
+                  <UserPlus className="w-3.5 h-3.5" />
+                  <span>Sign Up</span>
+                </button>
+              </div>
             )}
           </div>
         </div>
@@ -194,6 +200,11 @@ export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }
                   Shimla Manali Package
                 </Link>
               </div>
+            </li>
+            <li>
+              <Link href="/stranger-trip/" className="hover:text-primaryCyan transition-colors">
+                Stranger Trip
+              </Link>
             </li>
             <li>
               <Link href="/contact" className="hover:text-primaryCyan transition-colors">
@@ -297,6 +308,9 @@ export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }
               )}
             </div>
 
+            <Link href="/stranger-trip/" className="block py-3 text-sm font-semibold hover:text-primaryCyan rounded-lg hover:bg-slate-800/50 px-3 transition-colors border-t border-slate-800/50">
+              Stranger Trip
+            </Link>
             <Link href="/contact" className="block py-3 text-sm font-semibold hover:text-primaryCyan rounded-lg hover:bg-slate-800/50 px-3 transition-colors">
               Contact Us
             </Link>
@@ -314,70 +328,18 @@ export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }
         )}
       </nav>
 
-      {/* Sign In Modal */}
-      {authModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-navyBlue/95 backdrop-blur-md text-white w-full max-w-md p-6 rounded-2xl border border-slate-700 shadow-2xl relative">
-            <button
-              onClick={() => setAuthModal(false)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-white"
-            >
-              <X className="w-5 h-5" />
-            </button>
-            <h3 className="text-xl font-bold text-white mb-2">
-              Sign In to Exporio Holidays
-            </h3>
-            <p className="text-xs text-slate-400 mb-6">
-              Enter your credentials to access your account or Admin Dashboard.
-            </p>
-
-            {authMessage ? (
-              <div className="p-3 bg-emerald-500/20 border border-emerald-500 text-emerald-300 rounded-lg text-sm mb-4">
-                {authMessage}
-              </div>
-            ) : null}
-
-            <form onSubmit={handleAuthSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Email Address</label>
-                <input
-                  type="email"
-                  required
-                  value={authEmail}
-                  onChange={(e) => setAuthEmail(e.target.value)}
-                  placeholder="admin@exporio.com"
-                  className="w-full bg-slate-800/80 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-primaryCyan"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Password</label>
-                <input
-                  type="password"
-                  required
-                  value={authPassword}
-                  onChange={(e) => setAuthPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full bg-slate-800/80 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-primaryCyan"
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={authLoading}
-                className="w-full bg-gradient-to-r from-primaryCyan to-blue-600 text-navyDark font-bold py-2.5 rounded-lg text-sm hover:brightness-110 transition-all shadow-glow flex items-center justify-center"
-              >
-                {authLoading ? (
-                  <svg className="animate-spin h-5 w-5 text-navyDark" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                  </svg>
-                ) : (
-                  'Sign In'
-                )}
-              </button>
-            </form>
-          </div>
-        </div>
+      {/* Sign In / Sign Up Modal */}
+      {authView && (
+        <AuthModal
+          key={authView}
+          initialView={authView}
+          notice={authNotice}
+          onClose={() => {
+            setAuthView(null);
+            setAuthNotice('');
+          }}
+          onSignedIn={handleSignedIn}
+        />
       )}
     </>
   );

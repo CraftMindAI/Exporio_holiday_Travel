@@ -1,36 +1,66 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Exporio Holidays
 
-## Getting Started
+Next.js 15 (server-rendered) + Prisma + Hostinger MySQL. Images are uploaded to Hostinger over FTP and served by the app at `/media/<file>`; emails go out through Gmail.
 
-First, run the development server:
+## Local development
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env        # then fill in real values
+npm install                 # also runs `prisma generate`
+npx prisma migrate deploy   # create the tables
+npm run db:seed             # create the admin from VITE_ADMIN_EMAIL / VITE_ADMIN_PASSWORD
+npm run dev                 # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Health check: `GET /api/health` runs `SELECT 1` against the database.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Database commands
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Command | What it does |
+| --- | --- |
+| `npx prisma generate` | Regenerate the Prisma client (runs automatically on `npm install` and `npm run build`) |
+| `npx prisma migrate deploy` | Apply the migrations in `prisma/migrations` to the database (`npm run db:migrate`) |
+| `npm run db:seed` | Create the admin user, or reset its password |
+| `npm run db:migrate-from-supabase` | One-time copy of the old Supabase data into MySQL (needs `DIRECT_URL`) |
 
-## Learn More
+Every part of the app imports the single shared client from `lib/prisma.ts`. Never create another `PrismaClient` in app code.
 
-To learn more about Next.js, take a look at the following resources:
+## Deploying on Hostinger
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 1. Create the MySQL database
+hPanel → **Databases → MySQL Databases**: create the database and user. Note the **host, port, database name and username** exactly as hPanel shows them.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Build the connection string from those values, URL-encoding special characters in the password (`@` → `%40`, `#` → `%23`, `:` → `%3A`, `/` → `%2F`):
 
-## Deploy on Vercel
+```
+mysql://USERNAME:ENCODED_PASSWORD@HOST:PORT/DATABASE?connection_limit=5&pool_timeout=20
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### 2. Create the Node.js app
+hPanel → **Websites → Add website → Node.js app**: connect the GitHub repo (or upload the project).
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Node version: **20 or newer**
+- Build command: `npm run build`
+- Start command: `npm start`
+
+### 3. Enter the environment variables
+In the Node.js app's settings → **Environment variables**, add every key from `.env.example` with real values:
+`HOSTIGER_DATABASE_URL`, `NEXT_PUBLIC_SITE_URL`, `EMAIL_USER`, `EMAIL_PASSWORD`, `FTP_HOST`, `FTP_PORT`, `FTP_USER`, `FTP_PASSWORD`, `FTP_UPLOAD_DIR`, `ADMIN_NOTIFICATION_EMAIL` (optional), `VITE_ADMIN_EMAIL`, `VITE_ADMIN_PASSWORD`.
+
+Don't upload a `.env` file to the server; it's git-ignored on purpose.
+
+### 4. Run the migration (creates the tables)
+Pick one:
+
+- **Over SSH** (hPanel → Advanced → SSH Access), in the app's folder:
+  ```bash
+  npx prisma migrate deploy
+  npm run db:seed
+  ```
+- **From your computer**: enable **Remote MySQL** for your IP (hPanel → Databases → Remote MySQL), use the remote host hPanel shows in your local `.env`, then run the same two commands locally.
+- **No SSH access**: temporarily set the build command to `npx prisma migrate deploy && npm run build` and redeploy. It's safe to leave this in, since `migrate deploy` only applies migrations that haven't run yet.
+
+To copy the old Supabase data, run `npm run db:migrate-from-supabase` once (with `DIRECT_URL` set). It's safe to re-run.
+
+### 5. Restart the app
+After changing environment variables or running migrations: hPanel → **Websites → your Node.js app → Restart** (or **Redeploy** to rebuild from the latest code). Then open `https://your-domain/api/health`. It should return `{"status":"ok","database":"connected"}`.

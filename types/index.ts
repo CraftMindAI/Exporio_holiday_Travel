@@ -1,7 +1,24 @@
+/** One day of a tour's itinerary. */
+export interface ItineraryDay {
+  day: number;
+  title: string;
+  description: string;
+  /** Places visited that day */
+  places?: string[];
+  /** Meals included that day */
+  meals?: ('Breakfast' | 'Lunch' | 'Dinner')[];
+  /** Where guests stay that night */
+  stay?: string;
+}
+
 export interface TourPackage {
   id: string;
   title: string;
   slug: string;
+  /** Detailed description of the package */
+  description?: string;
+  /** The place (destination) this tour belongs to */
+  destinationId?: string;
   location: string;
   category: 'domestic' | 'international';
   price: number;
@@ -14,7 +31,9 @@ export interface TourPackage {
   highlights: string[];
   inclusions?: string[];
   exclusions?: string[];
-  itinerary?: { day: number; title: string; description: string }[];
+  /** Facility keys from config/tourFacilities.ts */
+  facilities?: string[];
+  itinerary?: ItineraryDay[];
   isFeatured?: boolean;
   isTrending?: boolean;
 }
@@ -38,6 +57,8 @@ export interface Destination {
   name: string;
   slug: string;
   category: 'domestic' | 'international';
+  /** Country for international places */
+  country?: string;
   imageUrl: string;
   packageCount: number;
   description?: string;
