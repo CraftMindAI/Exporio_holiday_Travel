@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { Mail, Phone, MapPin, Send, CheckCircle2, Facebook, Instagram, Youtube, Plane } from 'lucide-react';
 import { requestSubscription } from '@/lib/api';
 import { toast } from '@/lib/toast';
-import { siteConfig } from '@/config/siteConfig';
+import { siteConfig, FOOTER_LOCATIONS } from '@/config/siteConfig';
+import { mediaUrl } from '@/lib/routes';
 
 export default function Footer() {
   const [email, setEmail] = useState('');
@@ -29,7 +30,7 @@ export default function Footer() {
           <div className="space-y-4">
             <Link href="/" className="flex items-center">
               <img
-                src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/exporio-logo-white.png`}
+                src={mediaUrl('/exporio-logo-white.png')}
                 alt="Exporio Holidays"
                 className="h-14 w-auto object-contain"
               />
@@ -93,41 +94,13 @@ export default function Footer() {
               Popular Tour Packages
             </h4>
             <ul className="space-y-1.5 text-xs">
-              <li>
-                <Link href="/location/sikkim-tour-package" className="hover:text-primaryCyan transition-colors">
-                  Sikkim Tour Packages
-                </Link>
-              </li>
-              <li>
-                <Link href="/location/kashmir-tour-package" className="hover:text-primaryCyan transition-colors">
-                  Kashmir Tour Packages
-                </Link>
-              </li>
-              <li>
-                <Link href="/location/darjeeling-tour-packages" className="hover:text-primaryCyan transition-colors">
-                  Darjeeling Tour Packages
-                </Link>
-              </li>
-              <li>
-                <Link href="/location/kerala-tour-packages" className="hover:text-primaryCyan transition-colors">
-                  Kerala Tour Packages
-                </Link>
-              </li>
-              <li>
-                <Link href="/location/andaman-tour-package" className="hover:text-primaryCyan transition-colors">
-                  Andaman Tour Packages
-                </Link>
-              </li>
-              <li>
-                <Link href="/location/bhutan-tour-packages" className="hover:text-primaryCyan transition-colors">
-                  Bhutan Tour Packages
-                </Link>
-              </li>
-              <li>
-                <Link href="/location/bali-tour-packages" className="hover:text-primaryCyan transition-colors">
-                  Bali Tour Packages
-                </Link>
-              </li>
+              {FOOTER_LOCATIONS.map((l) => (
+                <li key={l.slug}>
+                  <Link href={`/location/${l.slug}/`} className="hover:text-primaryCyan transition-colors">
+                    {l.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 

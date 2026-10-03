@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { ArrowLeft, Calendar, User } from 'lucide-react';
 import { Blog } from '@/types';
+import { mediaUrl } from '@/lib/routes';
 
 export function formatBlogDate(value?: string): string {
   return value ? new Date(value).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Recently';
@@ -16,7 +17,7 @@ export default function BlogPost({ blog }: { blog: Blog }) {
       {/* Hero Header */}
       <div className="relative w-full h-[40vh] md:h-[50vh] bg-gradient-to-b from-navyDark via-[#1a1a4e] to-[#2d1b4e]">
         <img 
-          src={blog.image_url} 
+          src={mediaUrl(blog.image_url)} 
           alt={blog.title} 
           className="absolute inset-0 w-full h-full object-cover opacity-50"
         />

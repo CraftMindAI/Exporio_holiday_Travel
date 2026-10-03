@@ -94,7 +94,7 @@ export async function notifySubscribersAboutTour(tourId: string): Promise<{ succ
       <ul style="padding-left: 18px; line-height: 1.6;">
         <li><strong>Destination:</strong> ${escapeHtml(formatLocation(tour.location))}</li>
         <li><strong>Duration:</strong> ${tour.durationNights} Nights / ${tour.durationDays} Days</li>
-        <li><strong>Starting from:</strong> &#8377;${Number(tour.price).toLocaleString('en-IN')}</li>
+        ${tour.showPrice ? `<li><strong>Starting from:</strong> &#8377;${Number(tour.price).toLocaleString('en-IN')}</li>` : '<li><strong>Price:</strong> on request</li>'}
       </ul>
       ${emailButton(`${siteUrl}/tour/${encodeURIComponent(tour.slug)}/`, 'View Tour Package')}
       <p style="font-size: 12px; color: #64748b;">You are receiving this email because you subscribed to Exporio Holidays updates.</p>

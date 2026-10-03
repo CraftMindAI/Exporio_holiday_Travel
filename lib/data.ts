@@ -18,6 +18,7 @@ export function tourFromRow(t: TourRow): TourPackage {
     category: t.category === 'international' ? 'international' : 'domestic',
     price: Number(t.price),
     originalPrice: t.originalPrice != null ? Number(t.originalPrice) : undefined,
+    showPrice: t.showPrice,
     durationNights: t.durationNights,
     durationDays: t.durationDays,
     rating: Number(t.rating),
@@ -27,10 +28,17 @@ export function tourFromRow(t: TourRow): TourPackage {
     inclusions: stringArray(t.inclusions),
     exclusions: stringArray(t.exclusions),
     facilities: stringArray(t.facilities),
+    tourTypes: stringArray(t.tourTypes),
     itinerary: Array.isArray(t.itinerary) ? (t.itinerary as unknown as TourPackage['itinerary']) : [],
     isFeatured: t.isFeatured,
     isTrending: t.isTrending,
   };
+}
+
+/** Tour as sent to the public site: a hidden price is removed from the data, not just from the screen. */
+export function publicTourFromRow(t: TourRow): TourPackage {
+  const tour = tourFromRow(t);
+  return tour.showPrice ? tour : { ...tour, price: 0, originalPrice: undefined };
 }
 
 export function destinationFromRow(d: DestinationRow): Destination {
@@ -63,19 +71,21 @@ async function safely<T>(label: string, fn: () => Promise<T>, fallback: T): Prom
   try {
     return await fn();
   } catch (err) {
+    // A static GitHub Pages build must fail rather than publish pages without their data
+    if (process.env.STATIC_EXPORT) throw err;
     console.error(`[data] ${label} failed:`, err);
     return fallback;
   }
 }
 
 export function getAllTours(): Promise<TourPackage[]> {
-  return safely('tours', async () => (await prisma.tour.findMany({ orderBy: { createdAt: 'desc' } })).map(tourFromRow), []);
+  return safely('tours', async () => (await prisma.tour.findMany({ orderBy: { createdAt: 'desc' } })).map(publicTourFromRow), []);
 }
 
 export function getTourForSlug(slug: string): Promise<TourPackage | null> {
   return safely('tour', async () => {
     const row = await prisma.tour.findUnique({ where: { slug } });
-    return row ? tourFromRow(row) : null;
+    return row ? publicTourFromRow(row) : null;
   }, null);
 }
 
@@ -93,6 +103,31 @@ export function getBlogForSlug(slug: string): Promise<Blog | null> {
     const row = await prisma.blog.findUnique({ where: { slug } });
     return row ? blogFromRow(row) : null;
   }, null);
+}
+
+export type MenuData = {
+  places: { name: string; slug: string; category: string; country: string | null }[];
+  packages: { title: string; slug: string; place: string | null }[];
+};
+
+/** Header navigation: places (Tour menu) and, per place, its tour packages (Place To Visit menu). */
+export async function getMenu(): Promise<MenuData> {
+  const [places, tours] = await Promise.all([
+    prisma.destination.findMany({ orderBy: { name: 'asc' }, select: { name: true, slug: true, category: true, country: true } }),
+    prisma.tour.findMany({
+      orderBy: [{ isFeatured: 'desc' }, { createdAt: 'desc' }],
+      take: 200,
+      select: { title: true, slug: true, location: true, destination: { select: { slug: true } } },
+    }),
+  ]);
+  // Older tours may have no destination link; fall back to matching the location name
+  const slugByName = new Map(places.map((p) => [p.name.trim().toLowerCase(), p.slug]));
+  const packages = tours.map((t) => ({
+    title: t.title,
+    slug: t.slug,
+    place: t.destination?.slug ?? slugByName.get(t.location.trim().toLowerCase()) ?? null,
+  }));
+  return { places, packages };
 }
 
 /** URL-safe slug from a title. */

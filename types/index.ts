@@ -23,6 +23,8 @@ export interface TourPackage {
   category: 'domestic' | 'international';
   price: number;
   originalPrice?: number;
+  /** false = price hidden on the website ("Price on request"); public data then has price 0 */
+  showPrice?: boolean;
   durationNights: number;
   durationDays: number;
   rating: number;
@@ -33,6 +35,8 @@ export interface TourPackage {
   exclusions?: string[];
   /** Facility keys from config/tourFacilities.ts */
   facilities?: string[];
+  /** Tour type keys from config/tourFacilities.ts (honeymoon, family, ...) */
+  tourTypes?: string[];
   itinerary?: ItineraryDay[];
   isFeatured?: boolean;
   isTrending?: boolean;

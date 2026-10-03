@@ -75,6 +75,8 @@ model Tour {
   category              String    @default("domestic") @db.VarChar(50)
   price                 Decimal   @db.Decimal(10, 2)
   originalPrice         Decimal?  @map("original_price") @db.Decimal(10, 2)
+  /// false = price hidden on the website ("Price on request")
+  showPrice             Boolean   @default(true) @map("show_price")
   durationNights        Int       @map("duration_nights")
   durationDays          Int       @map("duration_days")
   rating                Decimal   @default(5.0) @db.Decimal(3, 1)
@@ -88,6 +90,8 @@ model Tour {
   exclusions            Json?
   /// What the package provides: keys from config/tourFacilities.ts (tour_manager, hotel, meals, transport, sightseeing)
   facilities            Json?
+  /// Tour types (keys from config/tourFacilities.ts TOUR_TYPES): honeymoon, friends_group, adventure, nature, solo, family
+  tourTypes             Json?     @map("tour_types")
   /// { day, title, description, places?: string[], meals?: ('Breakfast'|'Lunch'|'Dinner')[], stay?: string }[]
   itinerary             Json?
   isFeatured            Boolean   @default(false) @map("is_featured")

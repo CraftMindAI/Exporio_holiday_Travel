@@ -5,6 +5,14 @@ import { refreshSite, tourInput, uniqueSlug } from '@/lib/adminInput';
 import { staffRoute, fail, ok, readJson } from '@/lib/http';
 import type { Prisma } from '@prisma/client';
 
+export const dynamic = 'force-dynamic';
+
+/** GET /api/admin/tours - all tours with full data, including prices hidden on the website. Staff only. */
+export const GET = staffRoute(async () => {
+  const rows = await prisma.tour.findMany({ orderBy: { createdAt: 'desc' } });
+  return ok(rows.map(tourFromRow));
+});
+
 /** POST /api/admin/tours - publish a new tour package and email subscribers about it. */
 export const POST = staffRoute(async (_admin, req) => {
   const body = await readJson(req);

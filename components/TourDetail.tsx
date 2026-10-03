@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getTourBySlug } from '@/lib/api';
 import { TourPackage } from '@/types';
+import { mediaUrl } from '@/lib/routes';
 import InquiryModal from '@/components/InquiryModal';
 import { Star, Clock, MapPin, CheckCircle2, XCircle, Hotel, Utensils, Car, Compass, Calendar, ChevronDown, Phone, Send, ArrowLeft, BedDouble, Navigation } from 'lucide-react';
 import { TOUR_FACILITIES } from '@/config/tourFacilities';
@@ -87,7 +88,7 @@ export default function TourDetail({ slug, initialTour }: { slug: string; initia
       {/* Banner */}
       <div className="relative bg-gradient-to-b from-navyDark via-[#1a1a4e] to-[#2d1b4e] text-white pt-8 sm:pt-12 pb-16 sm:pb-20">
         <img
-          src={tour.imageUrl}
+          src={mediaUrl(tour.imageUrl)}
           alt={tour.title}
           className="absolute inset-0 w-full h-full object-cover object-center opacity-30"
         />
@@ -125,13 +126,22 @@ export default function TourDetail({ slug, initialTour }: { slug: string; initia
 
             {/* Starting Price Box */}
             <div className="bg-navyBlue/90 backdrop-blur-md p-4 sm:p-5 rounded-2xl border border-slate-700 shadow-2xl flex flex-col items-end w-full lg:w-auto">
-              <span className="text-[10px] sm:text-xs text-slate-400 font-semibold">Starting Price Per Person</span>
-              <div className="flex items-baseline gap-2 my-1">
-                <span className="text-2xl sm:text-3xl font-black text-white">₹{tour.price.toLocaleString('en-IN')}</span>
-                {tour.originalPrice && (
-                  <span className="text-xs sm:text-sm text-slate-400 line-through">₹{tour.originalPrice.toLocaleString('en-IN')}</span>
-                )}
-              </div>
+              {tour.showPrice === false ? (
+                <>
+                  <span className="text-[10px] sm:text-xs text-slate-400 font-semibold">Price</span>
+                  <span className="text-xl sm:text-2xl font-black text-white my-1">On request</span>
+                </>
+              ) : (
+                <>
+                  <span className="text-[10px] sm:text-xs text-slate-400 font-semibold">Starting Price Per Person</span>
+                  <div className="flex items-baseline gap-2 my-1">
+                    <span className="text-2xl sm:text-3xl font-black text-white">₹{tour.price.toLocaleString('en-IN')}</span>
+                    {tour.originalPrice && (
+                      <span className="text-xs sm:text-sm text-slate-400 line-through">₹{tour.originalPrice.toLocaleString('en-IN')}</span>
+                    )}
+                  </div>
+                </>
+              )}
               <button
                 type="button"
                 onClick={(e) => {

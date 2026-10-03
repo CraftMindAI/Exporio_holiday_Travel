@@ -2,9 +2,20 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Mail, MapPin, PhoneCall, Facebook, Instagram, Youtube, LogIn, ChevronDown, Menu, X, LayoutDashboard } from 'lucide-react';
+import { Mail, MapPin, PhoneCall, Facebook, Instagram, Youtube, LogIn, ChevronDown, ChevronRight, Menu, X, LayoutDashboard } from 'lucide-react';
 import { siteConfig } from '@/config/siteConfig';
 import { getCurrentUser, onAuthChange, signOutUser, CurrentUser } from '@/lib/userAuth';
+import { STAFF_LOGIN_PATH, STAFF_LOGIN_URL, STATIC_DEMO, mediaUrl } from '@/lib/routes';
+import { apiFetch } from '@/lib/api';
+
+type MenuData = {
+  places: { name: string; slug: string; category: string; country: string | null }[];
+  packages: { title: string; slug: string; place: string | null }[];
+};
+
+const DESKTOP_LINK = 'block px-4 py-2 hover:bg-slate-800 hover:text-primaryCyan text-xs font-bold uppercase text-slate-200';
+const MOBILE_LINK = 'block py-2.5 text-xs font-bold uppercase text-slate-300 hover:text-primaryCyan rounded-lg hover:bg-slate-800/50 px-3 transition-colors';
+const PANEL = 'bg-navyDark/95 backdrop-blur-md border border-slate-700 rounded-xl shadow-[0_10px_40px_-10px_rgba(255,78,0,0.3)] py-2';
 
 export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -12,7 +23,19 @@ export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }
   const [placeDropdownOpen, setPlaceDropdownOpen] = useState(false);
   // Only staff (admins / employees) have accounts; customers browse without signing in
   const [user, setUser] = useState<CurrentUser | null>(null);
-  const adminPath = user?.adminPath || '/admin';
+  const [menu, setMenu] = useState<MenuData>({ places: [], packages: [] });
+  // Place hovered in the "Place To Visit" menu (desktop) / expanded (mobile)
+  const [hoverPlace, setHoverPlace] = useState<string | null>(null);
+  const [mobilePlace, setMobilePlace] = useState<string | null>(null);
+  const packagesFor = (slug: string) => menu.packages.filter((t) => t.place === slug);
+
+  // Header menus come from the database: Places (Tour menu) and Tour Packages (Place To Visit menu)
+  React.useEffect(() => {
+    apiFetch<MenuData>('/api/menu')
+      .then(setMenu)
+      .catch(() => undefined);
+  }, []);
+  const adminPath = user?.adminPath || STAFF_LOGIN_PATH;
 
   React.useEffect(() => {
     const refreshUser = () => getCurrentUser().then(setUser);
@@ -23,7 +46,7 @@ export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }
   const handleLogout = async () => {
     await signOutUser();
     setUser(null);
-    if (window.location.pathname.startsWith('/admin') || window.location.pathname.startsWith('/auth/')) {
+    if (window.location.pathname.startsWith('/auth/')) {
       window.location.href = '/';
     }
   };
@@ -70,9 +93,10 @@ export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }
             </div>
 
             {/* Staff sign-in (admins / employees) or, when signed in, a quick link to the dashboard */}
-            {!user && (
+            {/* The standalone demo has no server, so no staff sign-in */}
+            {!user && !STATIC_DEMO && (
               <Link
-                href="/admin/"
+                href={STAFF_LOGIN_URL}
                 className="flex items-center gap-1 hover:text-primaryCyan transition-colors font-medium bg-slate-800/80 px-3 py-1 rounded-md border border-slate-700"
               >
                 <LogIn className="w-3.5 h-3.5 text-primaryCyan" />
@@ -109,7 +133,7 @@ export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }
           {/* Brand Logo */}
           <Link href="/" className="flex items-center">
             <img
-              src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/exporio-logo-white.png`}
+              src={mediaUrl('/exporio-logo-white.png')}
               alt="Exporio Holidays"
               className="h-11 sm:h-14 w-auto object-contain"
             />
@@ -127,38 +151,56 @@ export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }
                 Tour <ChevronDown className="w-4 h-4" />
               </span>
               {/* Dropdown */}
-              <div className="absolute top-full left-0 mt-2 w-56 bg-navyDark/95 backdrop-blur-md border border-slate-700 rounded-xl shadow-[0_10px_40px_-10px_rgba(255,78,0,0.3)] opacity-0 group-hover:opacity-100 visibility-hidden group-hover:visible transition-all duration-200 py-2 z-50">
-                <Link href="/location/sikkim-tour-package" className="block px-4 py-2 hover:bg-slate-800 hover:text-primaryCyan text-xs font-bold capitalize text-slate-200">
-                  Sikkim & Gangtok Packages
-                </Link>
-                <Link href="/location/kashmir-tour-package" className="block px-4 py-2 hover:bg-slate-800 hover:text-primaryCyan text-xs font-bold capitalize text-slate-200">
-                  Kashmir Paradise Packages
-                </Link>
-                <Link href="/location/darjeeling-tour-packages" className="block px-4 py-2 hover:bg-slate-800 hover:text-primaryCyan text-xs font-bold capitalize text-slate-200">
-                  Darjeeling Tour Packages
-                </Link>
-                <Link href="/location/kerala-tour-packages" className="block px-4 py-2 hover:bg-slate-800 hover:text-primaryCyan text-xs font-bold capitalize text-slate-200">
-                  Kerala Backwaters
-                </Link>
-                <Link href="/location/andaman-tour-package" className="block px-4 py-2 hover:bg-slate-800 hover:text-primaryCyan text-xs font-bold capitalize text-slate-200">
-                  Andaman Islands
-                </Link>
+              <div className="absolute top-full left-0 mt-2 w-72 max-h-96 overflow-y-auto bg-navyDark/95 backdrop-blur-md border border-slate-700 rounded-xl shadow-[0_10px_40px_-10px_rgba(255,78,0,0.3)] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 py-2 z-50">
+                {menu.places.length === 0 ? (
+                  <span className="block px-4 py-2 text-xs text-slate-500 normal-case">No places yet</span>
+                ) : (
+                  menu.places.map((p) => (
+                    <Link key={p.slug} href={`/location/${p.slug}/`} className={DESKTOP_LINK}>
+                      {p.name}
+                      {p.category === 'international' && p.country ? <span className="text-slate-500 font-semibold"> · {p.country}</span> : null}
+                    </Link>
+                  ))
+                )}
               </div>
             </li>
-            <li className="relative group cursor-pointer">
+            <li className="relative group cursor-pointer" onMouseLeave={() => setHoverPlace(null)}>
               <span className="flex items-center gap-1 hover:text-primaryCyan transition-colors">
                 Place To Visit <ChevronDown className="w-4 h-4" />
               </span>
-              <div className="absolute top-full left-0 mt-2 w-56 bg-navyDark/95 backdrop-blur-md border border-slate-700 rounded-xl shadow-[0_10px_40px_-10px_rgba(255,78,0,0.3)] opacity-0 group-hover:opacity-100 visibility-hidden group-hover:visible transition-all duration-200 py-2 z-50">
-                <Link href="/location/bhutan-tour-packages" className="block px-4 py-2 hover:bg-slate-800 hover:text-primaryCyan text-xs font-bold capitalize text-slate-200">
-                  Bhutan Himalayan Tour
-                </Link>
-                <Link href="/location/bali-tour-packages" className="block px-4 py-2 hover:bg-slate-800 hover:text-primaryCyan text-xs font-bold capitalize text-slate-200">
-                  Bali Island Escape
-                </Link>
-                <Link href="/location/shimla-manali-tour-package" className="block px-4 py-2 hover:bg-slate-800 hover:text-primaryCyan text-xs font-bold capitalize text-slate-200">
-                  Shimla Manali Package
-                </Link>
+              {/* Places, and on hover a flyout with that place's packages */}
+              <div className="absolute top-full left-0 pt-2 flex items-start opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                <div className={`${PANEL} w-64 max-h-96 overflow-y-auto`}>
+                  {menu.places.length === 0 ? (
+                    <span className="block px-4 py-2 text-xs text-slate-500 normal-case">No places yet</span>
+                  ) : (
+                    menu.places.map((p) => (
+                      <Link
+                        key={p.slug}
+                        href={`/location/${p.slug}/`}
+                        onMouseEnter={() => setHoverPlace(p.slug)}
+                        onFocus={() => setHoverPlace(p.slug)}
+                        className={`${DESKTOP_LINK} flex items-center justify-between gap-2 ${hoverPlace === p.slug ? 'bg-slate-800 text-primaryCyan' : ''}`}
+                      >
+                        {p.name}
+                        <ChevronRight className="w-4 h-4 shrink-0" />
+                      </Link>
+                    ))
+                  )}
+                </div>
+                {hoverPlace && (
+                  <div className={`${PANEL} w-72 max-h-96 overflow-y-auto -ml-px`}>
+                    {packagesFor(hoverPlace).length === 0 ? (
+                      <span className="block px-4 py-2 text-xs text-slate-500 normal-case">No packages yet</span>
+                    ) : (
+                      packagesFor(hoverPlace).map((t) => (
+                        <Link key={t.slug} href={`/tour/${t.slug}/`} className={`${DESKTOP_LINK} leading-relaxed`}>
+                          {t.title}
+                        </Link>
+                      ))
+                    )}
+                  </div>
+                )}
               </div>
             </li>
             <li>
@@ -225,21 +267,16 @@ export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }
               </button>
               {tourDropdownOpen && (
                 <div className="pl-4 space-y-1 pb-2">
-                  <Link href="/location/sikkim-tour-package" className="block py-2.5 text-xs font-bold capitalize text-slate-300 hover:text-primaryCyan rounded-lg hover:bg-slate-800/50 px-3 transition-colors">
-                    Sikkim & Gangtok
-                  </Link>
-                  <Link href="/location/kashmir-tour-package" className="block py-2.5 text-xs font-bold capitalize text-slate-300 hover:text-primaryCyan rounded-lg hover:bg-slate-800/50 px-3 transition-colors">
-                    Kashmir Paradise
-                  </Link>
-                  <Link href="/location/darjeeling-tour-packages" className="block py-2.5 text-xs font-bold capitalize text-slate-300 hover:text-primaryCyan rounded-lg hover:bg-slate-800/50 px-3 transition-colors">
-                    Darjeeling
-                  </Link>
-                  <Link href="/location/kerala-tour-packages" className="block py-2.5 text-xs font-bold capitalize text-slate-300 hover:text-primaryCyan rounded-lg hover:bg-slate-800/50 px-3 transition-colors">
-                    Kerala Backwaters
-                  </Link>
-                  <Link href="/location/andaman-tour-package" className="block py-2.5 text-xs font-bold capitalize text-slate-300 hover:text-primaryCyan rounded-lg hover:bg-slate-800/50 px-3 transition-colors">
-                    Andaman Islands
-                  </Link>
+                  {menu.places.length === 0 ? (
+                    <span className="block py-2.5 px-3 text-xs text-slate-500">No places yet</span>
+                  ) : (
+                    menu.places.map((p) => (
+                      <Link key={p.slug} href={`/location/${p.slug}/`} className={MOBILE_LINK} onClick={() => setMobileMenuOpen(false)}>
+                        {p.name}
+                        {p.category === 'international' && p.country ? <span className="text-slate-500"> · {p.country}</span> : null}
+                      </Link>
+                    ))
+                  )}
                 </div>
               )}
             </div>
@@ -255,15 +292,36 @@ export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }
               </button>
               {placeDropdownOpen && (
                 <div className="pl-4 space-y-1 pb-2">
-                  <Link href="/location/bhutan-tour-packages" className="block py-2.5 text-xs font-bold capitalize text-slate-300 hover:text-primaryCyan rounded-lg hover:bg-slate-800/50 px-3 transition-colors">
-                    Bhutan Himalayan Tour
-                  </Link>
-                  <Link href="/location/bali-tour-packages" className="block py-2.5 text-xs font-bold capitalize text-slate-300 hover:text-primaryCyan rounded-lg hover:bg-slate-800/50 px-3 transition-colors">
-                    Bali Island Escape
-                  </Link>
-                  <Link href="/location/shimla-manali-tour-package" className="block py-2.5 text-xs font-bold capitalize text-slate-300 hover:text-primaryCyan rounded-lg hover:bg-slate-800/50 px-3 transition-colors">
-                    Shimla Manali
-                  </Link>
+                  {menu.places.length === 0 ? (
+                    <span className="block py-2.5 px-3 text-xs text-slate-500">No places yet</span>
+                  ) : (
+                    menu.places.map((p) => (
+                      <div key={p.slug}>
+                        <button
+                          type="button"
+                          onClick={() => setMobilePlace(mobilePlace === p.slug ? null : p.slug)}
+                          aria-expanded={mobilePlace === p.slug}
+                          className={`${MOBILE_LINK} w-full flex items-center justify-between`}
+                        >
+                          {p.name}
+                          <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${mobilePlace === p.slug ? 'rotate-180' : ''}`} />
+                        </button>
+                        {mobilePlace === p.slug && (
+                          <div className="pl-4 pb-1">
+                            {packagesFor(p.slug).length === 0 ? (
+                              <span className="block py-2 px-3 text-xs text-slate-500">No packages yet</span>
+                            ) : (
+                              packagesFor(p.slug).map((t) => (
+                                <Link key={t.slug} href={`/tour/${t.slug}/`} className={MOBILE_LINK} onClick={() => setMobileMenuOpen(false)}>
+                                  {t.title}
+                                </Link>
+                              ))
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  )}
                 </div>
               )}
             </div>

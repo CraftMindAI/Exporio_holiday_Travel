@@ -8,7 +8,7 @@ import { TourPackage, Destination, ItineraryDay } from '@/types';
 import { createTour, updateTour, uploadImage } from '@/lib/api';
 import { toast } from '@/lib/toast';
 import Select from '@/components/Select';
-import { TOUR_FACILITIES, DAY_MEALS, MAX_TOUR_DAYS, DayMeal } from '@/config/tourFacilities';
+import { TOUR_FACILITIES, TOUR_TYPES, DAY_MEALS, MAX_TOUR_DAYS, DayMeal } from '@/config/tourFacilities';
 import { FACILITY_ICONS } from '@/components/tourFacilityIcons';
 
 
@@ -71,6 +71,8 @@ export default function TourForm({
   const [itinerary, setItinerary] = useState<DayDraft[]>(() => resizeDays((tour?.itinerary ?? []).map(toDraft), tour?.durationDays ?? 5));
   const [isFeatured, setIsFeatured] = useState(tour?.isFeatured ?? true);
   const [isTrending, setIsTrending] = useState(tour?.isTrending ?? true);
+  const [showPrice, setShowPrice] = useState(tour?.showPrice ?? true);
+  const [tourTypes, setTourTypes] = useState<string[]>(tour?.tourTypes ?? []);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -122,9 +124,11 @@ export default function TourForm({
       description,
       price: Number(price),
       originalPrice: originalPrice ? Number(originalPrice) : null,
+      showPrice,
       durationDays: days,
       imageUrl,
       facilities,
+      tourTypes,
       highlights: highlights.map((h) => h.trim()).filter(Boolean),
       itinerary: itinerary.map((d, i) => ({
         day: i + 1,
@@ -268,6 +272,10 @@ export default function TourForm({
                   className={inputClass}
                 />
                 <div className="flex flex-wrap gap-4 pt-1">
+                  <label className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer" title="When unticked, the website shows 'Price on request' instead of the price">
+                    <input type="checkbox" checked={showPrice} onChange={(e) => setShowPrice(e.target.checked)} className="accent-[#ff4e00] w-4 h-4" />
+                    Show price on website
+                  </label>
                   <label className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
                     <input type="checkbox" checked={isFeatured} onChange={(e) => setIsFeatured(e.target.checked)} className="accent-[#ff4e00] w-4 h-4" />
                     Featured
@@ -313,6 +321,32 @@ export default function TourForm({
                 >
                   <Icon className={`w-4 h-4 ${on ? 'text-primaryCyan' : ''}`} /> {f.label}
                 </button>
+              );
+            })}
+          </div>
+        </Section>
+
+        {/* ---------------- Tour type ---------------- */}
+        <Section title="Tour Type" hint="Tick every type this package suits. Customers use these in the Tour Type filter on location pages.">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5" role="group" aria-label="Tour type">
+            {TOUR_TYPES.map((t) => {
+              const on = tourTypes.includes(t.key);
+              return (
+                <label
+                  key={t.key}
+                  className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl border text-xs font-semibold cursor-pointer transition-colors ${
+                    on ? 'bg-primaryCyan/15 border-primaryCyan text-white' : 'border-slate-700 text-slate-300 hover:border-slate-500'
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    value={t.key}
+                    checked={on}
+                    onChange={(e) => setTourTypes((current) => (e.target.checked ? [...current, t.key] : current.filter((x) => x !== t.key)))}
+                    className="w-4 h-4 accent-[#ff4e00] cursor-pointer"
+                  />
+                  {t.label}
+                </label>
               );
             })}
           </div>

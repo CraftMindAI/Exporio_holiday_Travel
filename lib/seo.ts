@@ -155,10 +155,11 @@ export function tourMetadata(tour: TourPackage): Metadata {
     name,
     mentionsDuration ? '' : ` ${duration}`,
     mentionsPackage ? '' : ` ${location} Tour Package`,
-    ` @ ${formatPrice(tour.price)}`,
+    tour.showPrice === false ? '' : ` @ ${formatPrice(tour.price)}`,
   ].join('');
   const description = truncate(
-    `Book ${name}, a ${tour.durationNights} nights / ${tour.durationDays} days ${location} tour package starting at ${formatPrice(tour.price)} per person` +
+    `Book ${name}, a ${tour.durationNights} nights / ${tour.durationDays} days ${location} tour package` +
+      (tour.showPrice === false ? '' : ` starting at ${formatPrice(tour.price)} per person`) +
       (highlights ? `. Highlights: ${highlights}` : '') +
       '. Customizable itinerary, hotels, transfers & 24/7 support by Exporio Holidays.',
     160,
@@ -230,14 +231,19 @@ export function tourJsonLd(tour: TourPackage, destination?: Destination) {
             },
           }
         : {}),
-      offers: {
-        '@type': 'Offer',
-        url,
-        price: Number(tour.price),
-        priceCurrency: 'INR',
-        availability: 'https://schema.org/InStock',
-        seller: { '@type': 'TravelAgency', name: SITE_NAME, url: SITE_URL },
-      },
+      // Price offer only when the price is shown on the website
+      ...(tour.showPrice === false
+        ? {}
+        : {
+          offers: {
+            '@type': 'Offer',
+            url,
+            price: Number(tour.price),
+            priceCurrency: 'INR',
+            availability: 'https://schema.org/InStock',
+            seller: { '@type': 'TravelAgency', name: SITE_NAME, url: SITE_URL },
+          },
+          }),
     },
     breadcrumbJsonLd([
       { name: 'Home', path: '/' },
@@ -252,7 +258,7 @@ export function tourJsonLd(tour: TourPackage, destination?: Destination) {
 /* ------------------------------------------------------------------ */
 
 export function locationMetadata(slug: string, name: string, tours: TourPackage[], imageUrl?: string): Metadata {
-  const prices = tours.map((t) => t.price).filter((p) => p > 0);
+  const prices = tours.filter((t) => t.showPrice !== false).map((t) => t.price).filter((p) => p > 0);
   const fromPrice = prices.length ? ` starting at ${formatPrice(Math.min(...prices))}` : '';
   const count = tours.length ? `${tours.length}+ ` : '';
 

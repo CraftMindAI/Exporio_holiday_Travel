@@ -6,6 +6,7 @@ import { prisma } from '@/lib/prisma';
 import { hashPassword } from '@/lib/auth';
 import { cleanText, normalizeEmail, PHONE_RE } from '@/lib/http';
 import { transporter, fromAddress, siteUrl, emailLayout, emailButton, escapeHtml } from '@/lib/mailer';
+import { STAFF_LOGIN_PATH } from '@/lib/routes';
 
 export const MAX_IMPORT_ROWS = 200;
 
@@ -56,7 +57,7 @@ export async function existingEmails(emails: string[]): Promise<Set<string>> {
 }
 
 async function sendWelcomeEmail(input: EmployeeInput, employeeCode: string, password: string): Promise<void> {
-  const loginUrl = `${siteUrl}/admin/`;
+  const loginUrl = `${siteUrl}${STAFF_LOGIN_PATH}`;
   const row = (label: string, value: string) =>
     `<tr><td style="padding: 4px 12px 4px 0; color: #64748b;">${label}</td><td>${value}</td></tr>`;
   await transporter.sendMail({
@@ -286,7 +287,7 @@ async function sendResetEmail(user: { name: string; email: string; employeeCode:
         <tr><td style="padding: 4px 12px 4px 0; color: #64748b;">Sign-in email</td><td><strong>${escapeHtml(user.email)}</strong></td></tr>
         <tr><td style="padding: 4px 12px 4px 0; color: #64748b;">New password</td><td><strong style="font-family: monospace; font-size: 15px;">${escapeHtml(password)}</strong></td></tr>
       </table>
-      ${emailButton(`${siteUrl}/admin/`, 'Sign in to the dashboard')}
+      ${emailButton(`${siteUrl}${STAFF_LOGIN_PATH}`, 'Sign in to the dashboard')}
       <p style="font-size: 12px; color: #64748b;">You have been signed out on all devices. After signing in, open <strong>Settings</strong> and choose your own password.</p>
     `),
   });

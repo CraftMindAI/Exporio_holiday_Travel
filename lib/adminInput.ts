@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { Prisma } from '@prisma/client';
 import { cleanText, optionalNumber, stringList } from '@/lib/http';
 import { COUNTRIES } from '@/config/countries';
-import { DAY_MEALS, MAX_TOUR_DAYS, TOUR_FACILITIES } from '@/config/tourFacilities';
+import { DAY_MEALS, MAX_TOUR_DAYS, TOUR_FACILITIES, TOUR_TYPES } from '@/config/tourFacilities';
 import { prisma } from '@/lib/prisma';
 
 /** Refresh the cached public pages after content changes. */
@@ -48,6 +48,7 @@ export async function tourInput(body: Body, mode: 'create' | 'update'): Promise<
     data.price = price;
   }
   if (has(body, 'originalPrice')) data.originalPrice = optionalNumber(body.originalPrice) ?? null;
+  if (has(body, 'showPrice')) data.showPrice = body.showPrice !== false;
 
   // Nights are always one less than days
   let days: number | undefined;
@@ -71,6 +72,10 @@ export async function tourInput(body: Body, mode: 'create' | 'update'): Promise<
   if (has(body, 'facilities')) {
     const allowed = new Set<string>(TOUR_FACILITIES.map((f) => f.key));
     data.facilities = stringList(body.facilities, 10).filter((f) => allowed.has(f));
+  }
+  if (has(body, 'tourTypes')) {
+    const allowed = new Set<string>(TOUR_TYPES.map((t) => t.key));
+    data.tourTypes = stringList(body.tourTypes, 10).filter((t) => allowed.has(t));
   }
   if (has(body, 'itinerary')) {
     const raw = Array.isArray(body.itinerary) ? body.itinerary : [];

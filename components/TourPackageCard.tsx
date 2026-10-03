@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Star, Clock, MapPin, Hotel, Utensils, Car, Compass, Check, ArrowUpRight } from 'lucide-react';
 import { TourPackage } from '@/types';
+import { mediaUrl } from '@/lib/routes';
 
 interface TourPackageCardProps {
   tour: TourPackage;
@@ -28,7 +29,7 @@ function formatLocation(location: string) {
 }
 
 export default function TourPackageCard({ tour, onEnquire }: TourPackageCardProps) {
-  const discountPercent = tour.originalPrice
+  const discountPercent = tour.showPrice !== false && tour.originalPrice
     ? Math.round(((tour.originalPrice - tour.price) / tour.originalPrice) * 100)
     : 0;
 
@@ -37,7 +38,7 @@ export default function TourPackageCard({ tour, onEnquire }: TourPackageCardProp
       {/* Image */}
       <Link href={`/tour/${tour.slug}`} className="relative block h-56 sm:h-60 overflow-hidden rounded-2xl">
         <img
-          src={tour.imageUrl}
+          src={mediaUrl(tour.imageUrl)}
           alt={tour.title}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
         />
@@ -103,6 +104,12 @@ export default function TourPackageCard({ tour, onEnquire }: TourPackageCardProp
 
         {/* Price + CTA */}
         <div className="mt-auto flex items-center justify-between gap-3 rounded-2xl bg-white/[0.06] border border-white/10 p-3">
+          {tour.showPrice === false ? (
+            <div className="flex flex-col">
+              <span className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase tracking-widest">Price</span>
+              <span className="text-sm sm:text-base font-black text-white leading-tight">On request</span>
+            </div>
+          ) : (
           <div className="flex flex-col">
             <span className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase tracking-widest">Per person</span>
             <div className="flex items-baseline gap-1.5">
@@ -116,6 +123,7 @@ export default function TourPackageCard({ tour, onEnquire }: TourPackageCardProp
               )}
             </div>
           </div>
+          )}
           <button
             type="button"
             onClick={(e) => {

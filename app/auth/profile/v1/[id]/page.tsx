@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import AdminDashboard from '@/components/admin/AdminDashboard';
 import { adminProfilePath, getStaffUser } from '@/lib/auth';
+import { STAFF_LOGIN_PATH } from '@/lib/routes';
 
 export const metadata: Metadata = {
   title: 'Admin Dashboard',
@@ -16,7 +17,7 @@ type Props = { params: Promise<{ id: string }> };
 /** /auth/profile/v1/<hashed-user-id>/ - only the signed-in staff member (admin or employee) whose id hashes to <id> gets the dashboard. */
 export default async function AdminProfilePage({ params }: Props) {
   const user = await getStaffUser();
-  if (!user) redirect('/admin');
+  if (!user) redirect(STAFF_LOGIN_PATH);
 
   const expected = adminProfilePath(user.id);
   if (`/auth/profile/v1/${(await params).id}/` !== expected) redirect(expected);

@@ -2,10 +2,17 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import BlogPost from '@/components/BlogPost';
 import JsonLd from '@/components/JsonLd';
-import { getBlogForSlug } from '@/lib/data';
+import { getAllBlogs, getBlogForSlug } from '@/lib/data';
 import { blogJsonLd, blogMetadata } from '@/lib/seo';
 
 type Props = { params: Promise<{ slug: string }> };
+
+/** Static GitHub Pages build: pre-render every blog post. On Hostinger pages render on demand. */
+export async function generateStaticParams() {
+  if (!process.env.STATIC_EXPORT) return [];
+  const slugs = (await getAllBlogs()).map((b) => ({ slug: b.slug }));
+  return slugs.length ? slugs : [{ slug: 'none' }]; // a static export needs at least one page
+}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const blog = await getBlogForSlug((await params).slug);

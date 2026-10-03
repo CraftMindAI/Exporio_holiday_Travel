@@ -3,6 +3,7 @@ import { Calendar, User, ArrowRight, ArrowLeft, BookOpen, Phone, Mail, MapPin, F
 import { siteConfig } from '@/config/siteConfig';
 import { getAllBlogs } from '@/lib/data';
 import { formatBlogDate } from '@/components/BlogPost';
+import { mediaUrl } from '@/lib/routes';
 
 // Rendered on the server from the blogs table and cached; publishing a blog refreshes it
 export const revalidate = 300;
@@ -17,7 +18,7 @@ const ABOUT_POINTS = [
 function AboutUs() {
   return (
     <aside aria-labelledby="about-us" className="lg:sticky lg:top-16 bg-navyDark/70 backdrop-blur-md border border-slate-700/50 rounded-2xl p-5 sm:p-6 shadow-card">
-      <img src="/exporio-logo-white.png" alt="Exporio Holidays" className="h-10 w-auto mb-4" />
+      <img src={mediaUrl('/exporio-logo-white.png')} alt="Exporio Holidays" className="h-10 w-auto mb-4" />
       <h2 id="about-us" className="text-lg font-black text-white mb-1">About Us</h2>
       <p className="text-[11px] font-extrabold uppercase tracking-widest text-primaryCyan mb-3">{siteConfig.tagline}</p>
       <p className="text-xs text-slate-300 leading-relaxed mb-4">
@@ -124,7 +125,7 @@ export default async function BlogsPage() {
                 >
                   <div className="relative h-40 sm:h-48 overflow-hidden border-b border-slate-700/50 bg-slate-800">
                     <img
-                      src={post.image_url}
+                      src={mediaUrl(post.image_url)}
                       alt={post.title}
                       loading="lazy"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"

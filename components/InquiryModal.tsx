@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Check, ShieldCheck } from 'lucide-react';
 import { TourPackage, Inquiry } from '@/types';
+import { mediaUrl } from '@/lib/routes';
 import { submitInquiry } from '@/lib/api';
 import { toast } from '@/lib/toast';
 import { markInquirySubmitted } from '@/lib/inquiryStatus';
@@ -110,7 +111,7 @@ export default function InquiryModal({ tour, isOpen, onClose, context }: Inquiry
         {/* Top Banner Image */}
         <div className="relative h-20 sm:h-28 md:h-36 overflow-hidden bg-navyDark flex-shrink-0">
           <img
-            src={tour?.imageUrl || "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=1200&q=80"}
+            src={mediaUrl(tour?.imageUrl) || "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=1200&q=80"}
             alt="Travelers Banner"
             className="w-full h-full object-cover object-center"
           />

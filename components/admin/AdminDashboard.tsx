@@ -7,6 +7,7 @@ import {
   LogOut, Menu, X, ExternalLink,
 } from 'lucide-react';
 import { adminLogout, AdminSession } from '@/lib/adminAuth';
+import { STAFF_LOGIN_PATH } from '@/lib/routes';
 import DashboardHome from '@/components/admin/DashboardHome';
 import InquiriesPanel from '@/components/admin/InquiriesPanel';
 import SubscriptionsPanel from '@/components/admin/SubscriptionsPanel';
@@ -74,7 +75,7 @@ export default function AdminDashboard({ admin: initialAdmin }: { admin: AdminSe
 
   const handleLogout = async () => {
     await adminLogout();
-    window.location.replace('/admin');
+    window.location.replace(STAFF_LOGIN_PATH);
   };
 
   const current = nav.flatMap((g) => g.items).find((i) => i.id === section) ?? nav[0].items[0];

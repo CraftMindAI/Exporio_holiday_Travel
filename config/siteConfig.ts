@@ -22,3 +22,14 @@ export const siteConfig = {
     youtube: 'https://www.youtube.com/@exporioholidays',
   }
 };
+
+/** "Popular Tour Packages" links in the footer. */
+export const FOOTER_LOCATIONS = [
+  { slug: 'sikkim-tour-package', label: 'Sikkim Tour Packages' },
+  { slug: 'kashmir-tour-package', label: 'Kashmir Tour Packages' },
+  { slug: 'darjeeling-tour-packages', label: 'Darjeeling Tour Packages' },
+  { slug: 'kerala-tour-packages', label: 'Kerala Tour Packages' },
+  { slug: 'andaman-tour-package', label: 'Andaman Tour Packages' },
+  { slug: 'bhutan-tour-packages', label: 'Bhutan Tour Packages' },
+  { slug: 'bali-tour-packages', label: 'Bali Tour Packages' },
+];

@@ -1,6 +1,7 @@
 // Browser-side client for the app's API routes (app/api/*). Replaces the old Supabase client:
 // components call these functions; the database is only ever touched on the server via Prisma.
 import { TourPackage, Inquiry, Destination, Blog } from '@/types';
+import { apiUrl, BASE_PATH, STATIC_DEMO } from '@/lib/routes';
 
 export type Result = { success: boolean; message: string };
 
@@ -10,10 +11,29 @@ function withTrailingSlash(path: string): string {
   return `${base.endsWith('/') ? base : `${base}/`}${query ? `?${query}` : ''}`;
 }
 
+export const DEMO_FORMS_MESSAGE = 'This is a demo website, so online forms are switched off. Please call or WhatsApp us instead.';
+
+/** Demo site: answer the public catalog requests from the JSON files saved at build time (demo-api/*.json). */
+async function demoFetch<T>(path: string, init: RequestInit): Promise<T> {
+  if ((init.method ?? 'GET').toUpperCase() !== 'GET') throw new Error(DEMO_FORMS_MESSAGE);
+  const route = path.split('?')[0].replace(/\/+$/, '');
+  const tourSlug = route.match(/^\/api\/tours\/(.+)$/)?.[1];
+  const file = tourSlug ? 'tours' : route.replace(/^\/api\//, '');
+  if (!['tours', 'destinations', 'blogs', 'menu'].includes(file)) throw new Error('Not available on the demo website');
+  const res = await fetch(`${BASE_PATH}/demo-api/${file}.json`);
+  if (!res.ok) throw new Error(`Request failed (${res.status})`);
+  const data = await res.json();
+  if (!tourSlug) return data as T;
+  const tour = (data as TourPackage[]).find((t) => t.slug === decodeURIComponent(tourSlug));
+  if (!tour) throw new Error('Tour not found');
+  return tour as T;
+}
+
 /** fetch() wrapper: JSON in/out, cookies included, `{ error }` bodies turned into thrown Errors. */
 export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
+  if (STATIC_DEMO) return demoFetch<T>(path, init);
   const isForm = typeof FormData !== 'undefined' && init.body instanceof FormData;
-  const res = await fetch(withTrailingSlash(path), {
+  const res = await fetch(apiUrl(withTrailingSlash(path)), {
     credentials: 'same-origin',
     cache: 'no-store',
     ...init,
@@ -107,6 +127,16 @@ export function completeSubscription(subscriber: { name: string; email: string; 
 /* ------------------------------------------------------------------ */
 /* Admin content management                                            */
 /* ------------------------------------------------------------------ */
+
+/** Admin tour list with full data (includes prices hidden on the website). Staff only. */
+export async function getAdminTours(): Promise<TourPackage[]> {
+  try {
+    return await apiFetch<TourPackage[]>('/api/admin/tours');
+  } catch (err) {
+    console.warn('Could not load tours:', err);
+    return [];
+  }
+}
 
 /** Upload an image to Hostinger (FTP) and get its public URL. */
 export async function uploadImage(file: File, prefix: string): Promise<string> {

@@ -1,10 +1,17 @@
 import type { Metadata } from 'next';
 import TourDetail from '@/components/TourDetail';
 import JsonLd from '@/components/JsonLd';
-import { getAllDestinations, getTourForSlug } from '@/lib/data';
+import { getAllDestinations, getAllTours, getTourForSlug } from '@/lib/data';
 import { destinationForTour, tourJsonLd, tourMetadata } from '@/lib/seo';
 
 type Props = { params: Promise<{ slug: string }> };
+
+/** Static GitHub Pages build: pre-render every tour package. On Hostinger pages render on demand. */
+export async function generateStaticParams() {
+  if (!process.env.STATIC_EXPORT) return [];
+  const slugs = (await getAllTours()).map((t) => ({ slug: t.slug }));
+  return slugs.length ? slugs : [{ slug: 'none' }]; // a static export needs at least one page
+}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;

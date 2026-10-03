@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { uploadImage, createTour, getTours, updateTour, deleteTour, createDestination, getDestinations, updateDestination, deleteDestination, createBlog, getBlogs, updateBlog, deleteBlog } from '@/lib/api';
+import { uploadImage, createTour, getAdminTours, updateTour, deleteTour, createDestination, getDestinations, updateDestination, deleteDestination, createBlog, getBlogs, updateBlog, deleteBlog } from '@/lib/api';
 import { TourPackage, Destination, Blog } from '@/types';
 import Select from '@/components/Select';
 import TourForm from '@/components/admin/TourForm';
@@ -86,7 +86,7 @@ export default function ContentManager({ section }: { section: ContentSection })
 
   const fetchAdminTours = async () => {
     setLoadingTours(true);
-    const data = await getTours();
+    const data = await getAdminTours();
     setAdminTours(data);
     setLoadingTours(false);
   };
@@ -358,8 +358,13 @@ export default function ContentManager({ section }: { section: ContentSection })
                             <div className="font-bold text-white text-sm mb-1">{tour.title}</div>
                             <div className="text-slate-400 flex items-center gap-1"><MapPin className="w-3 h-3"/> {tour.location}</div>
                           </td>
-                          <td className="px-6 py-4 font-semibold text-primaryCyan">
+                          <td className="px-6 py-4 font-semibold text-primaryCyan whitespace-nowrap">
                             ₹{tour.price.toLocaleString('en-IN')}
+                            {tour.showPrice === false && (
+                              <span className="ml-2 inline-block border border-slate-600 text-slate-400 rounded-full px-2 py-0.5 text-[10px] font-bold align-middle" title="Price is hidden on the website">
+                                Hidden
+                              </span>
+                            )}
                           </td>
                           <td className="px-6 py-4 text-slate-300">
                             {tour.durationDays}D / {tour.durationNights}N
