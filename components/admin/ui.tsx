@@ -198,6 +198,9 @@ export function ConfirmDialog({
   title,
   children,
   confirmLabel = 'Delete',
+  busyLabel = 'Deleting…',
+  tone = 'danger',
+  icon: Icon = Trash2,
   busy = false,
   onConfirm,
   onCancel,
@@ -206,6 +209,10 @@ export function ConfirmDialog({
   title: string;
   children: React.ReactNode;
   confirmLabel?: string;
+  busyLabel?: string;
+  /** danger = red (delete), primary = brand orange */
+  tone?: 'danger' | 'primary';
+  icon?: React.ElementType;
   busy?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
@@ -222,8 +229,8 @@ export function ConfirmDialog({
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => !busy && onCancel()} />
       <div className="relative w-full max-w-sm bg-navyBlue border border-slate-700 rounded-2xl p-6 shadow-2xl">
-        <div className="w-12 h-12 rounded-full bg-red-500/15 text-red-400 flex items-center justify-center mx-auto mb-4">
-          <Trash2 className="w-6 h-6" />
+        <div className={`w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 ${tone === 'danger' ? 'bg-red-500/15 text-red-400' : 'bg-primaryCyan/15 text-primaryCyan'}`}>
+          <Icon className="w-6 h-6" />
         </div>
         <h2 id="confirm-title" className="text-lg font-extrabold text-white text-center mb-2">{title}</h2>
         <div className="text-sm text-slate-300 text-center mb-6">{children}</div>
@@ -231,8 +238,12 @@ export function ConfirmDialog({
           <button onClick={onCancel} disabled={busy} className="py-2.5 rounded-xl text-sm font-bold border border-slate-600 text-slate-200 hover:border-slate-400 disabled:opacity-50">
             Cancel
           </button>
-          <button onClick={onConfirm} disabled={busy} className="py-2.5 rounded-xl text-sm font-bold bg-red-600 hover:bg-red-500 text-white disabled:opacity-60">
-            {busy ? 'Deleting…' : confirmLabel}
+          <button
+            onClick={onConfirm}
+            disabled={busy}
+            className={`py-2.5 rounded-xl text-sm font-bold disabled:opacity-60 ${tone === 'danger' ? 'bg-red-600 hover:bg-red-500 text-white' : 'bg-primaryCyan hover:brightness-110 text-navyDark'}`}
+          >
+            {busy ? busyLabel : confirmLabel}
           </button>
         </div>
       </div>

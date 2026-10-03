@@ -8,9 +8,8 @@ import { prisma } from '@/lib/prisma';
 
 export const SESSION_COOKIE = 'exporio_session';
 const SESSION_DAYS = 30;
-const VERIFY_TOKEN_HOURS = 24;
 
-export type PublicUser = { id: string; name: string; email: string; phone: string; role: 'client' | 'admin' };
+export type PublicUser = { id: string; name: string; email: string; phone: string; role: 'admin' | 'employee' };
 
 export function toPublicUser(user: User): PublicUser {
   return { id: user.id, name: user.name, email: user.email, phone: user.phone ?? '', role: user.role };
@@ -56,6 +55,12 @@ export async function getSessionUser(): Promise<User | null> {
   return session.user;
 }
 
+/** The signed-in staff member (admin or employee) for this request, or null. */
+export async function getStaffUser(): Promise<User | null> {
+  const user = await getSessionUser();
+  return user && (user.role === 'admin' || user.role === 'employee') ? user : null;
+}
+
 /** The signed-in admin for this request, or null. */
 export async function getAdminUser(): Promise<User | null> {
   const user = await getSessionUser();
@@ -78,37 +83,12 @@ export async function revokeOtherSessions(userId: string): Promise<void> {
 }
 
 /* ------------------------------------------------------------------ */
-/* Email verification tokens                                           */
-/* ------------------------------------------------------------------ */
-
-/** Create a one-time email verification token; returns the raw token for the link. */
-export async function createVerifyToken(userId: string): Promise<string> {
-  const token = newToken();
-  await prisma.emailToken.deleteMany({ where: { userId, type: 'verify_email' } });
-  await prisma.emailToken.create({
-    data: { userId, type: 'verify_email', tokenHash: sha256(token), expiresAt: new Date(Date.now() + VERIFY_TOKEN_HOURS * 3_600_000) },
-  });
-  return token;
-}
-
-/** Mark the token's user as verified and consume the token. Returns the user, or null if invalid/expired. */
-export async function consumeVerifyToken(token: string): Promise<User | null> {
-  const record = await prisma.emailToken.findUnique({ where: { tokenHash: sha256(token) } });
-  if (!record || record.type !== 'verify_email') return null;
-
-  await prisma.emailToken.delete({ where: { id: record.id } });
-  if (record.expiresAt < new Date()) return null;
-
-  return prisma.user.update({ where: { id: record.userId }, data: { emailVerifiedAt: new Date() } });
-}
-
-/* ------------------------------------------------------------------ */
 /* Admin dashboard URL                                                 */
 /* ------------------------------------------------------------------ */
 
 /**
- * Dashboard URL /auth/profile/v1/<token>/ where <token> is a one-way hash of the admin's id.
- * The hash keeps the real id out of the URL; access is enforced by the session + admin role.
+ * Dashboard URL /auth/profile/v1/<token>/ where <token> is a one-way hash of the staff member's id.
+ * The hash keeps the real id out of the URL; access is enforced by the session + role.
  */
 export function adminProfilePath(userId: string): string {
   return `/auth/profile/v1/${sha256(`exporio-admin:${userId}`).slice(0, 40)}/`;

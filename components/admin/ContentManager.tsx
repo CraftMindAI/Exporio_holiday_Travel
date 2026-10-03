@@ -124,32 +124,42 @@ export default function ContentManager({ section }: { section: ContentSection })
     }
   };
 
+  /** Clear every field of the place form (back to a blank "Add Place"). */
+  const resetPlaceForm = () => {
+    setEditingDestinationId(null);
+    setPlaceName('');
+    setPlaceCategory('domestic');
+    setPlaceCountry('');
+    setPlaceImageUrl('');
+  };
+
   const handleCreatePlace = async (e: React.FormEvent) => {
     e.preventDefault();
     if (placeCategory === 'international' && !placeCountry) {
       toast.error('Please select the country for this international place.');
       return;
     }
+    if (!placeImageUrl) {
+      toast.error('Please upload a cover image or paste an image URL.');
+      return;
+    }
     setPlaceSubmitting(true);
 
+    const wasEditing = !!editingDestinationId;
     let res;
     if (editingDestinationId) {
       res = await updateDestination(editingDestinationId, {
         name: placeName,
         category: placeCategory,
         country: placeCategory === 'international' ? placeCountry : undefined,
-        imageUrl: placeImageUrl || undefined,
+        imageUrl: placeImageUrl,
       });
-      if (res.success) {
-        setEditingDestinationId(null);
-        fetchAdminDestinations();
-      }
     } else {
       res = await createDestination({
         name: placeName,
         category: placeCategory,
         country: placeCategory === 'international' ? placeCountry : undefined,
-        imageUrl: placeImageUrl || 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=600&q=80',
+        imageUrl: placeImageUrl,
         packageCount: 12,
       });
     }
@@ -157,11 +167,11 @@ export default function ContentManager({ section }: { section: ContentSection })
     toast.result(res);
     setPlaceSubmitting(false);
 
-    if (res.success && !editingDestinationId) {
-      setPlaceName('');
-      setPlaceCountry('');
-      setPlaceImageUrl('');
+    if (res.success) {
+      // Blank form after every successful save; after an edit, go back to the list
+      resetPlaceForm();
       fetchAdminDestinations();
+      if (wasEditing) setActiveTab('manage-places');
     }
   };
 
@@ -276,10 +286,7 @@ export default function ContentManager({ section }: { section: ContentSection })
               </button>
               <button
                 onClick={() => {
-                  setEditingDestinationId(null);
-                  setPlaceName('');
-                  setPlaceCountry('');
-                  setPlaceImageUrl('');
+                  resetPlaceForm();
                   setActiveTab('create-place');
                 }}
                 className={tabClass('create-place')}
@@ -541,11 +548,9 @@ export default function ContentManager({ section }: { section: ContentSection })
               {editingDestinationId && (
                 <button 
                   onClick={() => {
-                    setEditingDestinationId(null);
-                    setPlaceName('');
-                    setPlaceCountry('');
-                    setPlaceImageUrl('');
-                    }}
+                    resetPlaceForm();
+                    setActiveTab('manage-places');
+                  }}
                   className="text-xs text-slate-400 hover:text-white underline"
                 >
                   Cancel Edit
@@ -594,39 +599,51 @@ export default function ContentManager({ section }: { section: ContentSection })
                   )}
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-300 mb-1">Cover Image (Upload or Paste URL) *</label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="url"
-                        value={placeImageUrl}
-                        onChange={(e) => setPlaceImageUrl(e.target.value)}
-                        placeholder="Paste image URL here..."
-                        className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-primaryCyan"
-                      />
-                      <div className="relative">
+                    <label htmlFor="place-cover" className="block text-xs font-bold text-slate-300 mb-1">
+                      Cover Image * <span className="font-normal text-slate-500">(upload or paste a URL)</span>
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-[200px_1fr] gap-3 items-stretch">
+                      <label
+                        htmlFor="place-cover"
+                        className={`relative flex flex-col items-center justify-center gap-1.5 min-h-[120px] rounded-xl border-2 border-dashed overflow-hidden cursor-pointer ${
+                          placeImageUrl ? 'border-slate-700' : 'border-slate-600 hover:border-primaryCyan bg-slate-900/60'
+                        } ${isUploadingImage ? 'opacity-70 cursor-wait' : ''}`}
+                      >
+                        {placeImageUrl ? (
+                          <>
+                            <img src={placeImageUrl} alt="Cover preview" className="absolute inset-0 w-full h-full object-cover" />
+                            <span className="relative mt-auto mb-2 bg-navyDark/80 text-white text-[10px] font-semibold px-2.5 py-1 rounded-lg">
+                              {isUploadingImage ? 'Uploading…' : 'Click to replace'}
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <ImageIcon className="w-6 h-6 text-slate-400" />
+                            <span className="text-[11px] font-semibold text-slate-300">{isUploadingImage ? 'Uploading…' : 'Upload image'}</span>
+                          </>
+                        )}
                         <input
+                          id="place-cover"
                           type="file"
-                          accept="image/*"
+                          accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
                           onChange={handlePlaceImageUpload}
                           disabled={isUploadingImage}
-                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
-                          title="Upload Image"
+                          className="sr-only"
                         />
-                        <button
-                          type="button"
-                          disabled={isUploadingImage}
-                          className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold disabled:opacity-50 flex items-center gap-2 whitespace-nowrap transition-colors"
-                        >
-                          <ImageIcon className="w-4 h-4" />
-                          {isUploadingImage ? (
-                            <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                            </svg>
-                          ) : (
-                            'Upload'
-                          )}
-                        </button>
+                      </label>
+                      <div className="flex flex-col justify-center gap-2">
+                        <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">or paste image URL</span>
+                        <input
+                          type="url"
+                          aria-label="Cover image URL"
+                          value={placeImageUrl.startsWith('/media/') ? '' : placeImageUrl}
+                          onChange={(e) => setPlaceImageUrl(e.target.value.trim())}
+                          placeholder="https://images.unsplash.com/..."
+                          className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-primaryCyan"
+                        />
+                        {placeImageUrl.startsWith('/media/') && (
+                          <span className="text-[11px] text-emerald-400">Uploaded image will be used.</span>
+                        )}
                       </div>
                     </div>
                   </div>

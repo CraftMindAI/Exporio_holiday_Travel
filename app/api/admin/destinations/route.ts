@@ -1,11 +1,11 @@
 import { prisma } from '@/lib/prisma';
 import { destinationFromRow, slugify } from '@/lib/data';
 import { destinationInput, destinationNameTaken, isUniqueViolation, refreshSite, uniqueSlug } from '@/lib/adminInput';
-import { adminRoute, fail, ok, readJson } from '@/lib/http';
+import { staffRoute, fail, ok, readJson } from '@/lib/http';
 import type { Prisma } from '@prisma/client';
 
 /** POST /api/admin/destinations - add a destination / place. */
-export const POST = adminRoute(async (_admin, req) => {
+export const POST = staffRoute(async (_admin, req) => {
   const { data, error } = destinationInput(await readJson(req), 'create');
   if (error) return fail(error);
   if (await destinationNameTaken(String(data!.name))) return fail(`A place named "${data!.name}" already exists.`, 409);

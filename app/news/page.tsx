@@ -107,7 +107,7 @@ export default async function BlogsPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,7fr)_minmax(0,3fr)] gap-6 lg:gap-8 items-start">
-          <section aria-label="Blog posts">
+          <section aria-label="Blog posts" className="min-w-0">
           {blogs.length === 0 ? (
             <div className="text-center bg-navyDark/60 border border-slate-700/50 rounded-2xl p-10">
               <BookOpen className="w-10 h-10 text-slate-500 mx-auto mb-3" />
@@ -142,7 +142,7 @@ export default async function BlogsPage() {
                         {post.title}
                       </h2>
 
-                      <p className="text-[11px] sm:text-xs text-slate-300 line-clamp-3 leading-relaxed mb-3 sm:mb-4">
+                      <p className="text-[11px] sm:text-xs text-slate-300 line-clamp-3 leading-relaxed mb-3 sm:mb-4 [overflow-wrap:anywhere]">
                         {excerpt(post.content)}
                       </p>
                     </div>

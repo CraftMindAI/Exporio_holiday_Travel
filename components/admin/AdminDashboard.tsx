@@ -10,19 +10,21 @@ import { adminLogout, AdminSession } from '@/lib/adminAuth';
 import DashboardHome from '@/components/admin/DashboardHome';
 import InquiriesPanel from '@/components/admin/InquiriesPanel';
 import SubscriptionsPanel from '@/components/admin/SubscriptionsPanel';
-import UsersPanel from '@/components/admin/UsersPanel';
+import EmployeesPanel from '@/components/admin/EmployeesPanel';
 import SettingsPanel from '@/components/admin/SettingsPanel';
 import ContentManager from '@/components/admin/ContentManager';
 
-export type AdminSectionId = 'dashboard' | 'inquiries' | 'subscriptions' | 'users' | 'tours' | 'places' | 'blogs' | 'settings';
+export type AdminSectionId = 'dashboard' | 'inquiries' | 'subscriptions' | 'employees' | 'tours' | 'places' | 'blogs' | 'settings';
 
-const NAV: { group?: string; items: { id: AdminSectionId; label: string; icon: React.ElementType }[] }[] = [
+type NavItem = { id: AdminSectionId; label: string; icon: React.ElementType; adminOnly?: boolean };
+
+const NAV: { group?: string; items: NavItem[] }[] = [
   {
     items: [
       { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
       { id: 'inquiries', label: 'Inquiry', icon: MessageSquareText },
       { id: 'subscriptions', label: 'Subscription', icon: Mail },
-      { id: 'users', label: 'Users', icon: Users },
+      { id: 'employees', label: 'Employees', icon: Users, adminOnly: true },
       { id: 'places', label: 'Places', icon: MapPin },
       { id: 'tours', label: 'Tour Packages', icon: Plane },
       { id: 'blogs', label: 'Blogs', icon: BookOpen },
@@ -33,11 +35,15 @@ const NAV: { group?: string; items: { id: AdminSectionId; label: string; icon: R
  
 ];
 
-const SECTION_IDS = NAV.flatMap((g) => g.items.map((i) => i.id));
+/** The sidebar for a role: employees don't see admin-only sections. */
+function navFor(isAdmin: boolean) {
+  return NAV.map((g) => ({ ...g, items: g.items.filter((i) => isAdmin || !i.adminOnly) })).filter((g) => g.items.length);
+}
 
-function sectionFromHash(): AdminSectionId {
+/** Section from the URL hash, falling back to the dashboard for unknown or not-allowed sections. */
+function sectionFromHash(isAdmin: boolean): AdminSectionId {
   const id = window.location.hash.replace('#', '') as AdminSectionId;
-  return SECTION_IDS.includes(id) ? id : 'dashboard';
+  return navFor(isAdmin).some((g) => g.items.some((i) => i.id === id)) ? id : 'dashboard';
 }
 
 /**
@@ -48,14 +54,16 @@ export default function AdminDashboard({ admin: initialAdmin }: { admin: AdminSe
   const [admin, setAdmin] = useState<AdminSession>(initialAdmin);
   const [section, setSection] = useState<AdminSectionId>('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const isAdmin = admin.role === 'admin';
+  const nav = navFor(isAdmin);
 
   // The active section lives in the URL hash so refresh / back keep it
   useEffect(() => {
-    const onHash = () => setSection(sectionFromHash());
+    const onHash = () => setSection(sectionFromHash(isAdmin));
     onHash();
     window.addEventListener('hashchange', onHash);
     return () => window.removeEventListener('hashchange', onHash);
-  }, []);
+  }, [isAdmin]);
 
   const navigate = (id: AdminSectionId) => {
     setSection(id);
@@ -69,7 +77,7 @@ export default function AdminDashboard({ admin: initialAdmin }: { admin: AdminSe
     window.location.replace('/admin');
   };
 
-  const current = NAV.flatMap((g) => g.items).find((i) => i.id === section)!;
+  const current = nav.flatMap((g) => g.items).find((i) => i.id === section) ?? nav[0].items[0];
 
   const sidebar = (
     <div className="flex flex-col h-full">
@@ -83,7 +91,7 @@ export default function AdminDashboard({ admin: initialAdmin }: { admin: AdminSe
       </div>
 
       <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-5" aria-label="Admin">
-        {NAV.map((group, gi) => (
+        {nav.map((group, gi) => (
           <div key={gi}>
             {group.group && <p className="px-3 mb-1.5 text-[10px] font-extrabold uppercase tracking-widest text-slate-500">{group.group}</p>}
             <ul className="space-y-1">
@@ -117,6 +125,7 @@ export default function AdminDashboard({ admin: initialAdmin }: { admin: AdminSe
           <div className="min-w-0">
             <div className="text-sm font-bold text-white truncate">{admin.name}</div>
             <div className="text-[11px] text-slate-400 truncate">{admin.email}</div>
+            <div className="text-[10px] font-bold uppercase tracking-wider text-primaryCyan mt-0.5">{admin.role}</div>
           </div>
         </div>
         <button
@@ -157,12 +166,12 @@ export default function AdminDashboard({ admin: initialAdmin }: { admin: AdminSe
         </header>
 
         <main id="admin-main" className="flex-1 overflow-y-auto px-4 sm:px-6 py-6">
-          {section === 'dashboard' && <DashboardHome adminName={admin.name} onNavigate={navigate} />}
+          {section === 'dashboard' && <DashboardHome adminName={admin.name} isAdmin={isAdmin} onNavigate={navigate} />}
           {section === 'inquiries' && <InquiriesPanel />}
           {section === 'subscriptions' && <SubscriptionsPanel />}
-          {section === 'users' && <UsersPanel />}
+          {section === 'employees' && isAdmin && <EmployeesPanel currentUserId={admin.id} />}
           {(section === 'tours' || section === 'places' || section === 'blogs') && <ContentManager key={section} section={section} />}
-          {section === 'settings' && <SettingsPanel admin={admin} onProfileUpdated={setAdmin} />}
+          {section === 'settings' && <SettingsPanel admin={admin} isAdmin={isAdmin} onProfileUpdated={setAdmin} />}
         </main>
       </div>
     </div>

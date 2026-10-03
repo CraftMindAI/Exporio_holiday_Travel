@@ -2,49 +2,23 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Mail, MapPin, PhoneCall, Facebook, Instagram, Youtube, LogIn, ChevronDown, Menu, X, User, UserPlus } from 'lucide-react';
+import { Mail, MapPin, PhoneCall, Facebook, Instagram, Youtube, LogIn, ChevronDown, Menu, X, LayoutDashboard } from 'lucide-react';
 import { siteConfig } from '@/config/siteConfig';
-import AuthModal, { AuthView } from '@/components/AuthModal';
 import { getCurrentUser, onAuthChange, signOutUser, CurrentUser } from '@/lib/userAuth';
 
 export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [tourDropdownOpen, setTourDropdownOpen] = useState(false);
   const [placeDropdownOpen, setPlaceDropdownOpen] = useState(false);
-  const [authView, setAuthView] = useState<AuthView | null>(null);
+  // Only staff (admins / employees) have accounts; customers browse without signing in
   const [user, setUser] = useState<CurrentUser | null>(null);
-  const [authNotice, setAuthNotice] = useState('');
   const adminPath = user?.adminPath || '/admin';
 
   React.useEffect(() => {
     const refreshUser = () => getCurrentUser().then(setUser);
     refreshUser();
-
-    // Returning from the email verification link (/api/auth/verify signs the user in and redirects here)
-    const params = new URLSearchParams(window.location.search);
-    const verified = params.get('verified');
-    if (verified) {
-      if (verified === '1') {
-        setAuthView('verified');
-      } else {
-        setAuthNotice('That verification link is invalid or has expired. Sign in to get a new one.');
-        setAuthView('signin');
-      }
-      params.delete('verified');
-      const query = params.toString();
-      window.history.replaceState(null, '', `${window.location.pathname}${query ? `?${query}` : ''}${window.location.hash}`);
-    }
-
     return onAuthChange(refreshUser);
   }, []);
-
-  const handleSignedIn = (signedInUser?: CurrentUser) => {
-    if (signedInUser) setUser(signedInUser);
-    setTimeout(() => {
-      setAuthView(null);
-      if (signedInUser?.isAdmin && signedInUser.adminPath) window.location.assign(signedInUser.adminPath);
-    }, 1200);
-  };
 
   const handleLogout = async () => {
     await signOutUser();
@@ -95,23 +69,26 @@ export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }
               </a>
             </div>
 
-            {/* Signed-in user (with Admin link for admins) or Sign In / Sign Up buttons */}
-            {user ? (
+            {/* Staff sign-in (admins / employees) or, when signed in, a quick link to the dashboard */}
+            {!user && (
+              <Link
+                href="/admin/"
+                className="flex items-center gap-1 hover:text-primaryCyan transition-colors font-medium bg-slate-800/80 px-3 py-1 rounded-md border border-slate-700"
+              >
+                <LogIn className="w-3.5 h-3.5 text-primaryCyan" />
+                <span>Sign In</span>
+              </Link>
+            )}
+            {user && (
               <div className="flex items-center gap-2">
-                {user.isAdmin ? (
-                  <Link
-                    href={adminPath}
-                    className="flex items-center gap-1 hover:text-primaryCyan transition-colors font-medium bg-slate-800/80 px-3 py-1 rounded-md border border-slate-700"
-                  >
-                    <User className="w-3.5 h-3.5 text-primaryCyan" />
-                    <span>Admin</span>
-                  </Link>
-                ) : (
-                  <span className="flex items-center gap-1 font-medium bg-slate-800/80 px-3 py-1 rounded-md border border-slate-700 max-w-[140px]" title={user.email}>
-                    <User className="w-3.5 h-3.5 text-primaryCyan flex-shrink-0" />
-                    <span className="truncate">Hi, {user.name.split(' ')[0]}</span>
-                  </span>
-                )}
+                <Link
+                  href={adminPath}
+                  className="flex items-center gap-1 hover:text-primaryCyan transition-colors font-medium bg-slate-800/80 px-3 py-1 rounded-md border border-slate-700"
+                  title={`${user.name} (${user.role})`}
+                >
+                  <LayoutDashboard className="w-3.5 h-3.5 text-primaryCyan" />
+                  <span>Dashboard</span>
+                </Link>
                 <button
                   onClick={handleLogout}
                   className="flex items-center gap-1 hover:text-red-400 transition-colors font-medium bg-red-900/30 text-red-200 px-3 py-1 rounded-md border border-red-800/50"
@@ -119,23 +96,6 @@ export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }
                 >
                   <LogIn className="w-3.5 h-3.5 rotate-180" />
                   <span>Logout</span>
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setAuthView('signin')}
-                  className="flex items-center gap-1 hover:text-primaryCyan transition-colors font-medium bg-slate-800/80 px-3 py-1 rounded-md border border-slate-700"
-                >
-                  <LogIn className="w-3.5 h-3.5 text-primaryCyan" />
-                  <span>Sign In</span>
-                </button>
-                <button
-                  onClick={() => setAuthView('signup')}
-                  className="flex items-center gap-1 transition-colors font-bold bg-primaryCyan text-navyDark px-3 py-1 rounded-md hover:brightness-110"
-                >
-                  <UserPlus className="w-3.5 h-3.5" />
-                  <span>Sign Up</span>
                 </button>
               </div>
             )}
@@ -328,19 +288,6 @@ export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }
         )}
       </nav>
 
-      {/* Sign In / Sign Up Modal */}
-      {authView && (
-        <AuthModal
-          key={authView}
-          initialView={authView}
-          notice={authNotice}
-          onClose={() => {
-            setAuthView(null);
-            setAuthNotice('');
-          }}
-          onSignedIn={handleSignedIn}
-        />
-      )}
     </>
   );
 }

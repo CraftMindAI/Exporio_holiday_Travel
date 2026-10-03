@@ -1,17 +1,18 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { MessageSquareText, Mail, Users, Plane, ArrowRight } from 'lucide-react';
-import { fetchInquiries, fetchSubscribers, fetchClients, countRows, InquiryRow, INQUIRY_STATUSES } from '@/lib/adminData';
+import { MessageSquareText, Mail, Users, Plane, ArrowRight, MapPin } from 'lucide-react';
+import { fetchInquiries, fetchSubscribers, fetchEmployees, countRows, InquiryRow, INQUIRY_STATUSES } from '@/lib/adminData';
 import { PanelHeader, LoadingState, formatDate } from '@/components/admin/ui';
 import type { AdminSectionId } from '@/components/admin/AdminDashboard';
 
 type Stats = {
   inquiries: InquiryRow[];
   subscribers: number;
-  clients: number;
+  /** Staff accounts (admins) or places (employees) */
+  fourth: number;
   tours: number;
-  newThisWeek: { inquiries: number; subscribers: number; clients: number };
+  newThisWeek: { inquiries: number; subscribers: number };
 };
 
 const STATUS_BAR: Record<string, string> = {
@@ -34,30 +35,29 @@ async function safe<T>(fn: () => Promise<T>, fallback: T): Promise<T> {
   }
 }
 
-export default function DashboardHome({ adminName, onNavigate }: { adminName: string; onNavigate: (id: AdminSectionId) => void }) {
+export default function DashboardHome({ adminName, isAdmin, onNavigate }: { adminName: string; isAdmin: boolean; onNavigate: (id: AdminSectionId) => void }) {
   const [stats, setStats] = useState<Stats | null>(null);
 
   useEffect(() => {
     (async () => {
-      const [inquiries, subscribers, clients, tours] = await Promise.all([
+      const [inquiries, subscribers, fourth, tours] = await Promise.all([
         safe(fetchInquiries, []),
         safe(fetchSubscribers, []),
-        safe(fetchClients, []),
+        isAdmin ? safe(async () => (await fetchEmployees()).length, 0) : safe(() => countRows('destinations'), 0),
         safe(() => countRows('tours'), 0),
       ]);
       setStats({
         inquiries,
         subscribers: subscribers.length,
-        clients: clients.length,
+        fourth,
         tours,
         newThisWeek: {
           inquiries: inquiries.filter((i) => withinDays(i.created_at, 7)).length,
           subscribers: subscribers.filter((s) => withinDays(s.subscribed_at, 7)).length,
-          clients: clients.filter((c) => withinDays(c.created_at, 7)).length,
         },
       });
     })();
-  }, []);
+  }, [isAdmin]);
 
   const firstName = adminName.split(' ')[0];
 
@@ -74,7 +74,9 @@ export default function DashboardHome({ adminName, onNavigate }: { adminName: st
   const cards: { label: string; value: number; sub: string; icon: React.ElementType; target: AdminSectionId }[] = [
     { label: 'Inquiries', value: stats.inquiries.length, sub: `${pending} pending · ${stats.newThisWeek.inquiries} this week`, icon: MessageSquareText, target: 'inquiries' },
     { label: 'Subscribers', value: stats.subscribers, sub: `${stats.newThisWeek.subscribers} new this week`, icon: Mail, target: 'subscriptions' },
-    { label: 'Users', value: stats.clients, sub: `${stats.newThisWeek.clients} joined this week`, icon: Users, target: 'users' },
+    isAdmin
+      ? { label: 'Employees', value: stats.fourth, sub: 'Team members with dashboard access', icon: Users, target: 'employees' }
+      : { label: 'Places', value: stats.fourth, sub: 'Destinations on the website', icon: MapPin, target: 'places' },
     { label: 'Tour Packages', value: stats.tours, sub: 'Published on the website', icon: Plane, target: 'tours' },
   ];
 

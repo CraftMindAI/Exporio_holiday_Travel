@@ -2,11 +2,11 @@ import { prisma } from '@/lib/prisma';
 import { slugify, tourFromRow } from '@/lib/data';
 import { notifySubscribersAboutTour } from '@/lib/notify';
 import { refreshSite, tourInput, uniqueSlug } from '@/lib/adminInput';
-import { adminRoute, fail, ok, readJson } from '@/lib/http';
+import { staffRoute, fail, ok, readJson } from '@/lib/http';
 import type { Prisma } from '@prisma/client';
 
 /** POST /api/admin/tours - publish a new tour package and email subscribers about it. */
-export const POST = adminRoute(async (_admin, req) => {
+export const POST = staffRoute(async (_admin, req) => {
   const body = await readJson(req);
   const { data, error } = await tourInput(body, 'create');
   if (error) return fail(error);

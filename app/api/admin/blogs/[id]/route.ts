@@ -3,12 +3,12 @@ import { removeUnusedImages } from '@/lib/media';
 import { prisma } from '@/lib/prisma';
 import { blogFromRow } from '@/lib/data';
 import { blogInput, isNotFound, refreshSite } from '@/lib/adminInput';
-import { adminRoute, fail, ok, readJson } from '@/lib/http';
+import { staffRoute, fail, ok, readJson } from '@/lib/http';
 
 type Params = { id: string };
 
 /** PATCH /api/admin/blogs/:id */
-export const PATCH = adminRoute<Params>(async (_admin, req, { params }) => {
+export const PATCH = staffRoute<Params>(async (_admin, req, { params }) => {
   const { data, error } = blogInput(await readJson(req), 'update');
   if (error) return fail(error);
   const { id } = await params;
@@ -25,7 +25,7 @@ export const PATCH = adminRoute<Params>(async (_admin, req, { params }) => {
 });
 
 /** DELETE /api/admin/blogs/:id */
-export const DELETE = adminRoute<Params>(async (_admin, _req, { params }) => {
+export const DELETE = staffRoute<Params>(async (_admin, _req, { params }) => {
   const { id } = await params;
   const before = await prisma.blog.findUnique({ where: { id }, select: { imageUrl: true } });
   try {

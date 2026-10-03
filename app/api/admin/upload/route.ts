@@ -1,8 +1,8 @@
 import { imageExtension, MAX_UPLOAD_BYTES, uploadImage } from '@/lib/ftp';
-import { adminRoute, fail, ok } from '@/lib/http';
+import { staffRoute, fail, ok } from '@/lib/http';
 
 /** POST /api/admin/upload (multipart, field "file", optional "prefix") - upload an image to Hostinger via FTP. */
-export const POST = adminRoute(async (_admin, req) => {
+export const POST = staffRoute(async (_admin, req) => {
   const form = await req.formData().catch(() => null);
   const file = form?.get('file');
   if (!(file instanceof File)) return fail('Choose an image to upload.');

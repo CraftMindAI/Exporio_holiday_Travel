@@ -1,13 +1,13 @@
 import { InquiryStatus } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { isNotFound } from '@/lib/adminInput';
-import { adminRoute, fail, ok, readJson } from '@/lib/http';
+import { staffRoute, fail, ok, readJson } from '@/lib/http';
 
 type Params = { id: string };
 const STATUSES = Object.values(InquiryStatus) as string[];
 
 /** PATCH /api/admin/inquiries/:id - change a lead's status. */
-export const PATCH = adminRoute<Params>(async (_admin, req, { params }) => {
+export const PATCH = staffRoute<Params>(async (_admin, req, { params }) => {
   const status = String((await readJson(req)).status ?? '');
   if (!STATUSES.includes(status)) return fail('Invalid status.');
   try {
@@ -20,7 +20,7 @@ export const PATCH = adminRoute<Params>(async (_admin, req, { params }) => {
 });
 
 /** DELETE /api/admin/inquiries/:id */
-export const DELETE = adminRoute<Params>(async (_admin, _req, { params }) => {
+export const DELETE = staffRoute<Params>(async (_admin, _req, { params }) => {
   try {
     await prisma.inquiry.delete({ where: { id: (await params).id } });
     return ok({ success: true, message: 'Inquiry deleted.' });

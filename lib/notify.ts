@@ -3,10 +3,44 @@ import 'server-only';
 import { prisma } from '@/lib/prisma';
 import { getSetting } from '@/lib/settings';
 import { formatLocation } from '@/lib/seo';
+import { readFile } from 'node:fs/promises';
 import { transporter, fromAddress, siteUrl, emailLayout, emailButton, escapeHtml } from '@/lib/mailer';
+import { cachedImagePath, mediaContentType, mediaFileName } from '@/lib/ftp';
 
 // Keep each message's recipient list small to stay within Gmail's per-message limits
 const BCC_BATCH_SIZE = 50;
+
+const COVER_CID = 'tour-cover@exporio';
+const MAX_INLINE_IMAGE_BYTES = 5 * 1024 * 1024;
+
+/**
+ * Load a tour image so it can be embedded in the email itself (shown via cid:), instead of linking
+ * to the website. Mail apps then always show it, whether or not the site is reachable from the
+ * internet. Returns null if the image can't be loaded (the email falls back to a link).
+ */
+async function loadInlineImage(imageUrl: string): Promise<{ filename: string; content: Buffer; contentType: string } | null> {
+  try {
+    const fileName = mediaFileName(imageUrl);
+    if (fileName) {
+      // Our own upload: read it from the local cache / Hostinger FTP
+      const localPath = await cachedImagePath(fileName);
+      const contentType = mediaContentType(fileName);
+      if (!localPath || !contentType) return null;
+      return { filename: fileName, content: await readFile(localPath), contentType };
+    }
+    if (/^https?:\/\//.test(imageUrl)) {
+      const res = await fetch(imageUrl, { signal: AbortSignal.timeout(10_000) });
+      const contentType = res.headers.get('content-type')?.split(';')[0] ?? '';
+      if (!res.ok || !contentType.startsWith('image/')) return null;
+      const content = Buffer.from(await res.arrayBuffer());
+      if (content.length > MAX_INLINE_IMAGE_BYTES) return null;
+      return { filename: `tour-cover.${contentType.split('/')[1] || 'jpg'}`, content, contentType };
+    }
+  } catch (err) {
+    console.error('[notify] could not load tour image for email:', err);
+  }
+  return null;
+}
 
 /** Email a visitor the link to the /subscribe form. */
 export async function sendSubscribeInvite(email: string): Promise<void> {
@@ -49,9 +83,12 @@ export async function notifySubscribersAboutTour(tourId: string): Promise<{ succ
     if (emails.length === 0) return { success: true, message: 'No subscribers to notify yet.' };
 
     const title = escapeHtml(tour.title);
+    const cover = await loadInlineImage(tour.imageUrl);
+    const imageSrc = cover ? `cid:${COVER_CID}` : tour.imageUrl.startsWith('/') ? `${siteUrl}${tour.imageUrl}` : tour.imageUrl;
+
     const html = emailLayout(`
       <h2 style="color: #0b2038;">New Tour Package: ${title}</h2>
-      <img src="${escapeHtml(tour.imageUrl.startsWith('/') ? `${siteUrl}${tour.imageUrl}` : tour.imageUrl)}" alt="${title}" style="width: 100%; border-radius: 8px; margin: 8px 0;">
+      <img src="${escapeHtml(imageSrc)}" alt="${title}" style="width: 100%; max-width: 600px; height: auto; border-radius: 8px; margin: 8px 0; display: block;">
       <p>Hi there,</p>
       <p>We've just launched a new tour package you might love:</p>
       <ul style="padding-left: 18px; line-height: 1.6;">
@@ -68,6 +105,7 @@ export async function notifySubscribersAboutTour(tourId: string): Promise<{ succ
         from: fromAddress,
         to: fromAddress,
         bcc: emails.slice(i, i + BCC_BATCH_SIZE),
+        ...(cover ? { attachments: [{ ...cover, cid: COVER_CID, contentDisposition: 'inline' as const }] } : {}),
         subject: `New Tour Package Available: ${tour.title}`,
         html,
       });

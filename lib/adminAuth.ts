@@ -1,21 +1,17 @@
 // Browser-side admin account functions, backed by /api/auth/*.
 import { apiFetch, asResult, Result } from '@/lib/api';
-import { signInUser, signOutUser } from '@/lib/userAuth';
+import { signInUser, signOutUser, StaffRole } from '@/lib/userAuth';
 
-export type AdminSession = { id: string; name: string; email: string; phone: string };
+export type AdminSession = { id: string; name: string; email: string; phone: string; role: StaffRole };
 
 /**
- * Sign in and make sure the account is an admin.
- * On success, `redirectTo` is the admin's dashboard URL (/auth/profile/v1/<hashed-id>/).
+ * Staff sign-in (admins and employees).
+ * On success, `redirectTo` is the dashboard URL (/auth/profile/v1/<hashed-id>/).
  */
 export async function adminLogin(email: string, password: string): Promise<Result & { redirectTo?: string }> {
   const res = await signInUser(email, password);
   if (!res.success) return res;
-  if (!res.user?.isAdmin || !res.user.adminPath) {
-    await signOutUser();
-    return { success: false, message: 'This account does not have admin access.' };
-  }
-  return { success: true, message: res.message, redirectTo: res.user.adminPath };
+  return { success: true, message: res.message, redirectTo: res.user?.adminPath };
 }
 
 export async function adminLogout(): Promise<void> {

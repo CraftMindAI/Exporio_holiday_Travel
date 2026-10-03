@@ -155,12 +155,12 @@ export default function TourDetail({ slug, initialTour }: { slug: string; initia
         <div className="max-w-7xl mx-auto px-4 py-8 sm:py-12 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
             {/* Left Column: Details, Highlights, Itinerary */}
-            <div className="lg:col-span-2 space-y-6 sm:space-y-8">
+            <div className="lg:col-span-2 space-y-6 sm:space-y-8 min-w-0">
               {/* Description */}
               {tour.description && (
                 <div className="bg-navyDark/60 backdrop-blur-md p-4 sm:p-6 rounded-2xl border border-slate-700/50 shadow-sm">
                   <h2 className="text-lg sm:text-xl font-bold text-white mb-3">About this Package</h2>
-                  <div className="space-y-3 text-xs sm:text-sm text-slate-300 leading-relaxed">
+                  <div className="space-y-3 text-xs sm:text-sm text-slate-300 leading-relaxed [overflow-wrap:anywhere]">
                     {tour.description
                       .split('\n')
                       .filter((p) => p.trim())
@@ -196,7 +196,7 @@ export default function TourDetail({ slug, initialTour }: { slug: string; initia
                 <h3 className="text-lg sm:text-xl font-bold text-white mb-3 sm:mb-4">Tour Highlights</h3>
                 <ul className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3">
                   {tour.highlights.map((h, i) => (
-                    <li key={i} className="flex items-start gap-2 text-xs sm:text-sm text-slate-300">
+                    <li key={i} className="flex items-start gap-2 text-xs sm:text-sm text-slate-300 min-w-0 [overflow-wrap:anywhere]">
                       <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400 flex-shrink-0 mt-0.5 sm:mt-1" />
                       <span>{h}</span>
                     </li>
@@ -261,13 +261,13 @@ export default function TourDetail({ slug, initialTour }: { slug: string; initia
                             >
                               <span>
                                 <span className="block font-bold text-xs sm:text-sm text-white">Day {item.day}</span>
-                                {item.title && <span className="block text-[11px] sm:text-xs text-slate-400 mt-0.5">{item.title}</span>}
+                                {item.title && <span className="block text-[11px] sm:text-xs text-slate-400 mt-0.5 [overflow-wrap:anywhere]">{item.title}</span>}
                               </span>
                               {hasDetails && <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform flex-shrink-0 ${open ? 'rotate-180' : ''}`} />}
                             </button>
 
                             {open && (
-                              <div className="p-3 sm:p-4 bg-navyDark text-[11px] sm:text-xs text-slate-300 leading-relaxed border-t border-slate-700/50 space-y-3">
+                              <div className="p-3 sm:p-4 bg-navyDark text-[11px] sm:text-xs text-slate-300 leading-relaxed border-t border-slate-700/50 space-y-3 [overflow-wrap:anywhere]">
                                 {item.places && item.places.length > 0 && (
                                   <div className="flex flex-wrap items-center gap-1.5">
                                     <MapPin className="w-3.5 h-3.5 text-primaryCyan" />

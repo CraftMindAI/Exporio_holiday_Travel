@@ -10,7 +10,7 @@ import { toast } from '@/lib/toast';
 const inputClass =
   'w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-primaryCyan';
 
-/** Admin sign-in. Signed-in admins are sent straight to their dashboard. */
+/** Staff sign-in (admins and employees). Signed-in staff are sent straight to their dashboard. */
 export default function AdminLoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -19,7 +19,7 @@ export default function AdminLoginPage() {
 
   useEffect(() => {
     getCurrentUser().then((user) => {
-      if (user?.isAdmin && user.adminPath) window.location.replace(user.adminPath);
+      if (user?.adminPath) window.location.replace(user.adminPath);
       else setCheckingSession(false);
     });
   }, []);
@@ -52,13 +52,13 @@ export default function AdminLoginPage() {
             <ShieldAlert className="w-8 h-8 text-navyDark" />
           </div>
           <h2 className="text-2xl font-black text-white">Exporio Admin Portal</h2>
-          <p className="text-xs text-slate-400 mt-1">Sign in with your admin credentials to access the dashboard.</p>
+          <p className="text-xs text-slate-400 mt-1">Admins and employees: sign in to access the dashboard.</p>
         </div>
 
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-slate-300 mb-1">Admin Email *</label>
+            <label className="block text-xs font-bold text-slate-300 mb-1">Email *</label>
             <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="admin@exporio.com" className={inputClass} />
           </div>
           <div>

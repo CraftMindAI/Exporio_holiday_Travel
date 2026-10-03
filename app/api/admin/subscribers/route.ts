@@ -1,10 +1,10 @@
 import { prisma } from '@/lib/prisma';
-import { adminRoute, ok } from '@/lib/http';
+import { staffRoute, ok } from '@/lib/http';
 
 export const dynamic = 'force-dynamic';
 
 /** GET /api/admin/subscribers - newest first. */
-export const GET = adminRoute(async () => {
+export const GET = staffRoute(async () => {
   const rows = await prisma.subscriber.findMany({ orderBy: { subscribedAt: 'desc' } });
   return ok(
     rows.map((r) => ({

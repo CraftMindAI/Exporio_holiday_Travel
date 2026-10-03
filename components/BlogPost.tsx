@@ -40,7 +40,7 @@ export default function BlogPost({ blog }: { blog: Blog }) {
 
       {/* Blog Content */}
       <div className="max-w-4xl mx-auto px-4 py-12 md:py-16 relative z-10">
-        <div className="prose prose-lg prose-invert max-w-none text-slate-300">
+        <div className="prose prose-lg prose-invert max-w-none text-slate-300 [overflow-wrap:anywhere]">
           {blog.content
             .split('\n')
             .filter((paragraph) => paragraph.trim())

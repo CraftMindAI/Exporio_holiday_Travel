@@ -3,12 +3,12 @@ import { removeUnusedImages } from '@/lib/media';
 import { prisma } from '@/lib/prisma';
 import { tourFromRow } from '@/lib/data';
 import { isNotFound, refreshSite, tourInput } from '@/lib/adminInput';
-import { adminRoute, fail, ok, readJson } from '@/lib/http';
+import { staffRoute, fail, ok, readJson } from '@/lib/http';
 
 type Params = { id: string };
 
 /** PATCH /api/admin/tours/:id - update a tour package. */
-export const PATCH = adminRoute<Params>(async (_admin, req, { params }) => {
+export const PATCH = staffRoute<Params>(async (_admin, req, { params }) => {
   const { data, error } = await tourInput(await readJson(req), 'update');
   if (error) return fail(error);
   const { id } = await params;
@@ -26,7 +26,7 @@ export const PATCH = adminRoute<Params>(async (_admin, req, { params }) => {
 });
 
 /** DELETE /api/admin/tours/:id - delete a tour package (its inquiries are kept, unlinked). */
-export const DELETE = adminRoute<Params>(async (_admin, _req, { params }) => {
+export const DELETE = staffRoute<Params>(async (_admin, _req, { params }) => {
   const { id } = await params;
   const images = await prisma.tour.findUnique({ where: { id }, select: { imageUrl: true, placesVisit: { select: { imageUrl: true } } } });
   try {

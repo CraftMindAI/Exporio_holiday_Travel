@@ -87,18 +87,15 @@ try {
   await source.connect();
   console.log(DRY ? "DRY RUN - nothing will be written\n" : "Copying Supabase -> Hostinger MySQL\n");
 
-  // Users: profile from public.users, verification time from Supabase Auth
-  const users = await rows(`
-    select u.id, u.name, u.email, u.phone, u.role, u.password, u.created_at, a.email_confirmed_at
-    from public.users u left join auth.users a on a.id = u.id`);
+  // Users: only staff accounts are copied (customer / client accounts no longer exist)
+  const users = await rows(`select id, name, email, phone, role, password, created_at from public.users where role = 'admin'`);
   await copy("users", users, (u) => {
     const data = {
       name: u.name,
       email: u.email.toLowerCase(),
       phone: u.phone,
-      role: u.role === "admin" ? "admin" : "client",
+      role: "admin",
       password: u.password,
-      emailVerifiedAt: u.email_confirmed_at,
       createdAt: u.created_at,
     };
     return prisma.user.upsert({ where: { id: u.id }, create: { id: u.id, ...data }, update: data });

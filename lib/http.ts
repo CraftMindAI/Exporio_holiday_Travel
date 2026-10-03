@@ -2,7 +2,7 @@
 import 'server-only';
 import { NextResponse } from 'next/server';
 import type { User } from '@prisma/client';
-import { getAdminUser } from '@/lib/auth';
+import { getStaffUser } from '@/lib/auth';
 
 export type RouteContext<P = Record<string, string>> = { params: Promise<P> };
 
@@ -35,12 +35,22 @@ export function route<Args extends unknown[]>(fn: (...args: Args) => Promise<Res
   };
 }
 
-/** Like route(), but only for signed-in admins. */
+/** Like route(), but only for signed-in staff (admins and employees). */
+export function staffRoute<P>(fn: (user: User, req: Request, ctx: RouteContext<P>) => Promise<Response>) {
+  return route(async (req: Request, ctx: RouteContext<P>) => {
+    const user = await getStaffUser();
+    if (!user) return fail('Staff sign-in required.', 401);
+    return fn(user, req, ctx);
+  });
+}
+
+/** Like route(), but only for signed-in admins (employees get 403). */
 export function adminRoute<P>(fn: (admin: User, req: Request, ctx: RouteContext<P>) => Promise<Response>) {
   return route(async (req: Request, ctx: RouteContext<P>) => {
-    const admin = await getAdminUser();
-    if (!admin) return fail('Admin sign-in required.', 401);
-    return fn(admin, req, ctx);
+    const user = await getStaffUser();
+    if (!user) return fail('Staff sign-in required.', 401);
+    if (user.role !== 'admin') return fail('Only admins can do this.', 403);
+    return fn(user, req, ctx);
   });
 }
 

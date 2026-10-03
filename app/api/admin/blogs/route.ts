@@ -1,11 +1,11 @@
 import { prisma } from '@/lib/prisma';
 import { blogFromRow, slugify } from '@/lib/data';
 import { blogInput, refreshSite, uniqueSlug } from '@/lib/adminInput';
-import { adminRoute, fail, ok, readJson } from '@/lib/http';
+import { staffRoute, fail, ok, readJson } from '@/lib/http';
 import type { Prisma } from '@prisma/client';
 
 /** POST /api/admin/blogs - publish a blog post. */
-export const POST = adminRoute(async (_admin, req) => {
+export const POST = staffRoute(async (_admin, req) => {
   const { data, error } = blogInput(await readJson(req), 'create');
   if (error) return fail(error);
 

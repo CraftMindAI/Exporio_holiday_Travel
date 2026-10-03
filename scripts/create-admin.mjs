@@ -41,8 +41,8 @@ try {
 
   await prisma.user.upsert({
     where: { email },
-    create: { email, name, phone, password: hash, role: "admin", emailVerifiedAt: new Date() },
-    update: { name, ...(phone ? { phone } : {}), password: hash, role: "admin", emailVerifiedAt: existing?.emailVerifiedAt ?? new Date() },
+    create: { email, name, phone, password: hash, role: "admin" },
+    update: { name, ...(phone ? { phone } : {}), password: hash, role: "admin" },
   });
 
   // A new password signs the admin out everywhere

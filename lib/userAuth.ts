@@ -1,14 +1,15 @@
-// Browser-side account functions (signup / sign-in / verification), backed by /api/auth/*.
-import { apiFetch, asResult, Result } from '@/lib/api';
+// Browser-side sign-in state for staff (admins and employees), backed by /api/auth/*.
+import { apiFetch, Result } from '@/lib/api';
 
-export type CurrentUser = { id: string; name: string; email: string; phone: string; isAdmin: boolean; adminPath?: string };
+export type StaffRole = 'admin' | 'employee';
+export type CurrentUser = { id: string; name: string; email: string; phone: string; role: StaffRole; isAdmin: boolean; adminPath?: string };
 
-type PublicUser = { id: string; name: string; email: string; phone: string; role: 'client' | 'admin' };
+type PublicUser = { id: string; name: string; email: string; phone: string; role: StaffRole };
 
 const AUTH_EVENT = 'exporio-auth-change';
 
 function toCurrentUser(user: PublicUser, adminPath?: string): CurrentUser {
-  return { id: user.id, name: user.name, email: user.email, phone: user.phone, isAdmin: user.role === 'admin', adminPath };
+  return { id: user.id, name: user.name, email: user.email, phone: user.phone, role: user.role, isAdmin: user.role === 'admin', adminPath };
 }
 
 /** Tell other components on the page (e.g. the Header) that the user signed in or out. */
@@ -16,7 +17,7 @@ function announceAuthChange() {
   window.dispatchEvent(new Event(AUTH_EVENT));
 }
 
-/** The signed-in user, or null. */
+/** The signed-in staff member, or null. */
 export async function getCurrentUser(): Promise<CurrentUser | null> {
   try {
     const { user, adminPath } = await apiFetch<{ user: PublicUser | null; adminPath?: string }>('/api/auth/me');
@@ -26,13 +27,8 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
   }
 }
 
-/** Create an account; a verification link is emailed and must be clicked before signing in. */
-export function signUpUser(input: { name: string; email: string; phone: string; password: string }): Promise<Result> {
-  return asResult(apiFetch('/api/auth/signup', { method: 'POST', body: JSON.stringify(input) }));
-}
-
-/** Sign in. `notVerified` is set when the email hasn't been verified yet. */
-export async function signInUser(email: string, password: string): Promise<Result & { notVerified?: boolean; user?: CurrentUser }> {
+/** Staff sign-in. On success `user.adminPath` is the dashboard URL. */
+export async function signInUser(email: string, password: string): Promise<Result & { user?: CurrentUser }> {
   try {
     const data = await apiFetch<{ message: string; user: PublicUser; redirectTo?: string }>('/api/auth/login', {
       method: 'POST',
@@ -41,12 +37,8 @@ export async function signInUser(email: string, password: string): Promise<Resul
     announceAuthChange();
     return { success: true, message: data.message, user: toCurrentUser(data.user, data.redirectTo) };
   } catch (err: any) {
-    return { success: false, notVerified: err?.code === 'email_not_confirmed', message: err?.message || 'Sign in failed.' };
+    return { success: false, message: err?.message || 'Sign in failed.' };
   }
-}
-
-export function resendVerification(email: string): Promise<Result> {
-  return asResult(apiFetch('/api/auth/resend', { method: 'POST', body: JSON.stringify({ email }) }));
 }
 
 export async function signOutUser(): Promise<void> {

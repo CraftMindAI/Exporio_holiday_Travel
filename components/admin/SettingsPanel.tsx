@@ -11,7 +11,7 @@ const inputClass =
   'w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-primaryCyan disabled:opacity-60';
 const labelClass = 'block text-xs font-bold text-slate-300 mb-1';
 
-export default function SettingsPanel({ admin, onProfileUpdated }: { admin: AdminSession; onProfileUpdated: (a: AdminSession) => void }) {
+export default function SettingsPanel({ admin, isAdmin, onProfileUpdated }: { admin: AdminSession; isAdmin: boolean; onProfileUpdated: (a: AdminSession) => void }) {
   const [name, setName] = useState(admin.name);
   const [email, setEmail] = useState(admin.email);
   const [emailPassword, setEmailPassword] = useState('');
@@ -28,11 +28,13 @@ export default function SettingsPanel({ admin, onProfileUpdated }: { admin: Admi
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [savingSetting, setSavingSetting] = useState(false);
 
+  // Site-wide settings are admin-only
   useEffect(() => {
+    if (!isAdmin) return;
     fetchSettings()
       .then(setSettings)
       .catch((err) => toast.error(err.message || 'Could not load settings.'));
-  }, []);
+  }, [isAdmin]);
 
   const toggleSetting = async (key: keyof AppSettings) => {
     if (!settings) return;
@@ -80,7 +82,7 @@ export default function SettingsPanel({ admin, onProfileUpdated }: { admin: Admi
 
   return (
     <div>
-      <PanelHeader title="Settings" description="Update your admin profile, password and site settings." />
+      <PanelHeader title="Settings" description={isAdmin ? "Update your profile, password and site settings." : "Update your profile and password."} />
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <form onSubmit={handleProfile} className="bg-navyBlue border border-slate-800 rounded-2xl p-5 sm:p-6 space-y-4">
@@ -171,6 +173,7 @@ export default function SettingsPanel({ admin, onProfileUpdated }: { admin: Admi
         </form>
       </div>
 
+      {isAdmin && (
       <section className="bg-navyBlue border border-slate-800 rounded-2xl p-5 sm:p-6 mt-6" aria-labelledby="advanced-settings">
         <div className="flex items-center gap-2 mb-4">
           <SlidersHorizontal className="w-5 h-5 text-primaryCyan" />
@@ -203,6 +206,7 @@ export default function SettingsPanel({ admin, onProfileUpdated }: { admin: Admi
         </div>
 
       </section>
+      )}
     </div>
   );
 }
