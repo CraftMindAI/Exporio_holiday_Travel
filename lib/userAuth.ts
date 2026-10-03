@@ -1,6 +1,5 @@
 // Browser-side sign-in state for staff (admins and employees), backed by /api/auth/*.
 import { apiFetch, Result } from '@/lib/api';
-import { API_URL, STATIC_DEMO } from '@/lib/routes';
 
 export type StaffRole = 'admin' | 'employee';
 export type CurrentUser = { id: string; name: string; email: string; phone: string; role: StaffRole; isAdmin: boolean; adminPath?: string };
@@ -20,8 +19,6 @@ function announceAuthChange() {
 
 /** The signed-in staff member, or null. */
 export async function getCurrentUser(): Promise<CurrentUser | null> {
-  // The static GitHub Pages site has no staff session (sign-in happens on the API server)
-  if (API_URL || STATIC_DEMO) return null;
   try {
     const { user, adminPath } = await apiFetch<{ user: PublicUser | null; adminPath?: string }>('/api/auth/me');
     return user ? toCurrentUser(user, adminPath) : null;

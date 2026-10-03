@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Mail, MapPin, PhoneCall, Facebook, Instagram, Youtube, LogIn, ChevronDown, ChevronRight, Menu, X, LayoutDashboard } from 'lucide-react';
 import { siteConfig } from '@/config/siteConfig';
 import { getCurrentUser, onAuthChange, signOutUser, CurrentUser } from '@/lib/userAuth';
-import { STAFF_LOGIN_PATH, STAFF_LOGIN_URL, STATIC_DEMO, mediaUrl } from '@/lib/routes';
+import { STAFF_LOGIN_PATH } from '@/lib/routes';
 import { apiFetch } from '@/lib/api';
 
 type MenuData = {
@@ -15,7 +15,7 @@ type MenuData = {
 
 const DESKTOP_LINK = 'block px-4 py-2 hover:bg-slate-800 hover:text-primaryCyan text-xs font-bold uppercase text-slate-200';
 const MOBILE_LINK = 'block py-2.5 text-xs font-bold uppercase text-slate-300 hover:text-primaryCyan rounded-lg hover:bg-slate-800/50 px-3 transition-colors';
-const PANEL = 'bg-navyDark/95 backdrop-blur-md border border-slate-700 rounded-xl shadow-[0_10px_40px_-10px_rgba(255,78,0,0.3)] py-2';
+const PANEL = 'bg-navyDark border border-slate-700 rounded-xl shadow-[0_10px_40px_-10px_rgba(255,78,0,0.3)] py-2';
 
 export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -26,6 +26,12 @@ export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }
   const [menu, setMenu] = useState<MenuData>({ places: [], packages: [] });
   // Place hovered in the "Place To Visit" menu (desktop) / expanded (mobile)
   const [hoverPlace, setHoverPlace] = useState<string | null>(null);
+  const [flyoutTop, setFlyoutTop] = useState(0);
+  const hoverRow = (slug: string, row: HTMLElement) => {
+    setHoverPlace(slug);
+    // Line the packages panel up with the hovered row (minus the panel's own top padding)
+    setFlyoutTop(row.offsetTop - (row.parentElement?.scrollTop ?? 0) - 8);
+  };
   const [mobilePlace, setMobilePlace] = useState<string | null>(null);
   const packagesFor = (slug: string) => menu.packages.filter((t) => t.place === slug);
 
@@ -93,10 +99,9 @@ export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }
             </div>
 
             {/* Staff sign-in (admins / employees) or, when signed in, a quick link to the dashboard */}
-            {/* The standalone demo has no server, so no staff sign-in */}
-            {!user && !STATIC_DEMO && (
+            {!user && (
               <Link
-                href={STAFF_LOGIN_URL}
+                href={STAFF_LOGIN_PATH}
                 className="flex items-center gap-1 hover:text-primaryCyan transition-colors font-medium bg-slate-800/80 px-3 py-1 rounded-md border border-slate-700"
               >
                 <LogIn className="w-3.5 h-3.5 text-primaryCyan" />
@@ -133,7 +138,7 @@ export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }
           {/* Brand Logo */}
           <Link href="/" className="flex items-center">
             <img
-              src={mediaUrl('/exporio-logo-white.png')}
+              src="/exporio-logo-white.png"
               alt="Exporio Holidays"
               className="h-11 sm:h-14 w-auto object-contain"
             />
@@ -151,7 +156,7 @@ export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }
                 Tour <ChevronDown className="w-4 h-4" />
               </span>
               {/* Dropdown */}
-              <div className="absolute top-full left-0 mt-2 w-72 max-h-96 overflow-y-auto bg-navyDark/95 backdrop-blur-md border border-slate-700 rounded-xl shadow-[0_10px_40px_-10px_rgba(255,78,0,0.3)] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 py-2 z-50">
+              <div className="absolute top-full left-0 mt-2 w-72 max-h-96 overflow-y-auto bg-navyDark border border-slate-700 rounded-xl shadow-[0_10px_40px_-10px_rgba(255,78,0,0.3)] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 py-2 z-50">
                 {menu.places.length === 0 ? (
                   <span className="block px-4 py-2 text-xs text-slate-500 normal-case">No places yet</span>
                 ) : (
@@ -169,8 +174,8 @@ export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }
                 Place To Visit <ChevronDown className="w-4 h-4" />
               </span>
               {/* Places, and on hover a flyout with that place's packages */}
-              <div className="absolute top-full left-0 pt-2 flex items-start opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                <div className={`${PANEL} w-64 max-h-96 overflow-y-auto`}>
+              <div className="absolute top-full left-0 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                <div className={`${PANEL} w-64 max-h-96 overflow-y-auto`} onScroll={() => setHoverPlace(null)}>
                   {menu.places.length === 0 ? (
                     <span className="block px-4 py-2 text-xs text-slate-500 normal-case">No places yet</span>
                   ) : (
@@ -178,8 +183,8 @@ export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }
                       <Link
                         key={p.slug}
                         href={`/location/${p.slug}/`}
-                        onMouseEnter={() => setHoverPlace(p.slug)}
-                        onFocus={() => setHoverPlace(p.slug)}
+                        onMouseEnter={(e) => hoverRow(p.slug, e.currentTarget)}
+                        onFocus={(e) => hoverRow(p.slug, e.currentTarget)}
                         className={`${DESKTOP_LINK} flex items-center justify-between gap-2 ${hoverPlace === p.slug ? 'bg-slate-800 text-primaryCyan' : ''}`}
                       >
                         {p.name}
@@ -189,7 +194,7 @@ export default function Header({ onOpenInquiry }: { onOpenInquiry?: () => void }
                   )}
                 </div>
                 {hoverPlace && (
-                  <div className={`${PANEL} w-72 max-h-96 overflow-y-auto -ml-px`}>
+                  <div className={`${PANEL} absolute left-[calc(100%-1px)] w-72 max-h-96 overflow-y-auto`} style={{ top: flyoutTop }}>
                     {packagesFor(hoverPlace).length === 0 ? (
                       <span className="block px-4 py-2 text-xs text-slate-500 normal-case">No packages yet</span>
                     ) : (

@@ -36,7 +36,6 @@
     ".next-test/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules",
-    ".pages-build"
+    "node_modules"
   ]
 }

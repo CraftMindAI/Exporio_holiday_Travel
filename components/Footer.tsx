@@ -6,7 +6,6 @@ import { Mail, Phone, MapPin, Send, CheckCircle2, Facebook, Instagram, Youtube, 
 import { requestSubscription } from '@/lib/api';
 import { toast } from '@/lib/toast';
 import { siteConfig, FOOTER_LOCATIONS } from '@/config/siteConfig';
-import { mediaUrl } from '@/lib/routes';
 
 export default function Footer() {
   const [email, setEmail] = useState('');
@@ -30,7 +29,7 @@ export default function Footer() {
           <div className="space-y-4">
             <Link href="/" className="flex items-center">
               <img
-                src={mediaUrl('/exporio-logo-white.png')}
+                src="/exporio-logo-white.png"
                 alt="Exporio Holidays"
                 className="h-14 w-auto object-contain"
               />

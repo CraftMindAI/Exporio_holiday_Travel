@@ -4,7 +4,6 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getTourBySlug } from '@/lib/api';
 import { TourPackage } from '@/types';
-import { mediaUrl } from '@/lib/routes';
 import InquiryModal from '@/components/InquiryModal';
 import { Star, Clock, MapPin, CheckCircle2, XCircle, Hotel, Utensils, Car, Compass, Calendar, ChevronDown, Phone, Send, ArrowLeft, BedDouble, Navigation } from 'lucide-react';
 import { TOUR_FACILITIES } from '@/config/tourFacilities';
@@ -88,7 +87,7 @@ export default function TourDetail({ slug, initialTour }: { slug: string; initia
       {/* Banner */}
       <div className="relative bg-gradient-to-b from-navyDark via-[#1a1a4e] to-[#2d1b4e] text-white pt-8 sm:pt-12 pb-16 sm:pb-20">
         <img
-          src={mediaUrl(tour.imageUrl)}
+          src={tour.imageUrl}
           alt={tour.title}
           className="absolute inset-0 w-full h-full object-cover object-center opacity-30"
         />

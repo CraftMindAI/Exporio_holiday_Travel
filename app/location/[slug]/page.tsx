@@ -3,7 +3,6 @@ import LocationTours from '@/components/LocationTours';
 import JsonLd from '@/components/JsonLd';
 import { getAllDestinations, getAllTours } from '@/lib/data';
 import { locationJsonLd, locationMetadata, locationNameFromSlug, toursForLocation } from '@/lib/seo';
-import { FOOTER_LOCATIONS } from '@/config/siteConfig';
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -16,13 +15,6 @@ async function loadLocation(slug: string) {
     matching: toursForLocation(tours, slug),
     all: tours,
   };
-}
-
-/** Static GitHub Pages build: pre-render every place (and footer link). On Hostinger pages render on demand. */
-export async function generateStaticParams() {
-  if (!process.env.STATIC_EXPORT) return [];
-  const slugs = new Set([...(await getAllDestinations()).map((d) => d.slug), ...FOOTER_LOCATIONS.map((l) => l.slug)]);
-  return [...slugs].map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

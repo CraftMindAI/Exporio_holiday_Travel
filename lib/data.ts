@@ -71,8 +71,6 @@ async function safely<T>(label: string, fn: () => Promise<T>, fallback: T): Prom
   try {
     return await fn();
   } catch (err) {
-    // A static GitHub Pages build must fail rather than publish pages without their data
-    if (process.env.STATIC_EXPORT) throw err;
     console.error(`[data] ${label} failed:`, err);
     return fallback;
   }

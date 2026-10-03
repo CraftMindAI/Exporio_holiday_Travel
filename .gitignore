@@ -17,7 +17,6 @@
 /.next/
 /.next-*/
 /out/
-/.pages-build/
 
 # production
 /build

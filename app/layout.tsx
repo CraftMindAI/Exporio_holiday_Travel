@@ -12,7 +12,6 @@ import {
   DEFAULT_OG_IMAGE,
   organizationJsonLd,
 } from '@/lib/seo';
-import { BASE_PATH } from '@/lib/routes';
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -48,7 +47,7 @@ export const metadata: Metadata = {
     follow: true,
     googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1, 'max-video-preview': -1 },
   },
-  icons: { icon: `${BASE_PATH}/exporio-logo.jpeg`, apple: `${BASE_PATH}/exporio-logo.jpeg` },
+  icons: { icon: '/exporio-logo.jpeg', apple: '/exporio-logo.jpeg' },
   formatDetection: { telephone: false },
 };
 

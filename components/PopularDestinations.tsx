@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { Send, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getDestinations } from '@/lib/api';
 import { Destination } from '@/types';
-import { mediaUrl } from '@/lib/routes';
 
 export default function PopularDestinations() {
   const [destinations, setDestinations] = useState<Destination[]>([]);
@@ -86,7 +85,7 @@ export default function PopularDestinations() {
                   >
                     {/* Background Image */}
                     <img
-                      src={mediaUrl(dest.imageUrl)}
+                      src={dest.imageUrl}
                       alt={dest.name}
                       className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-700"
                     />

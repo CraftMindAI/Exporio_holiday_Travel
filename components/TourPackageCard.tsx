@@ -4,7 +4,6 @@ import React from 'react';
 import Link from 'next/link';
 import { Star, Clock, MapPin, Hotel, Utensils, Car, Compass, Check, ArrowUpRight } from 'lucide-react';
 import { TourPackage } from '@/types';
-import { mediaUrl } from '@/lib/routes';
 
 interface TourPackageCardProps {
   tour: TourPackage;
@@ -38,7 +37,7 @@ export default function TourPackageCard({ tour, onEnquire }: TourPackageCardProp
       {/* Image */}
       <Link href={`/tour/${tour.slug}`} className="relative block h-56 sm:h-60 overflow-hidden rounded-2xl">
         <img
-          src={mediaUrl(tour.imageUrl)}
+          src={tour.imageUrl}
           alt={tour.title}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
         />
